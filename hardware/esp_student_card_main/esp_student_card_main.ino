@@ -8,15 +8,16 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
-
-// String serverName = "192.168.1.XXX";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
+//local
+// String serverName = "192.168.1.XXX";   // REPLACE WITH YOUR local PC ADDRESS
 // const int serverPort = 80;
+// String serverPath = "/upload.php";
+// WiFiClient client;
 
+//remote
 String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
 const int serverPort = 443; //server port for HTTPS
-
-String serverPath = "/upload.php";     // The default serverPath should be upload.php
-
+String serverPath = "/upload.php";
 WiFiClientSecure client;
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
