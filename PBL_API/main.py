@@ -8,6 +8,18 @@ from datetime import date
 from random import randint
 from werkzeug.utils import secure_filename
 
+import torch
+import numpy as np
+import cv2
+from imutils import perspective
+import numpy as np
+import functools
+from skimage.filters import threshold_local
+import imutils
+from keras.models import load_model
+from tensorflow.keras.utils import img_to_array
+
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/'
 

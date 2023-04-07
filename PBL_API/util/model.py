@@ -10,12 +10,13 @@ from keras.models import load_model
 from tensorflow.keras.utils import img_to_array
 
 best_path = r"D:\DUT\best.pt"
+model_detect_frame = torch.hub.load('ultralytics/yolov5', 'custom',
+                        path=best_path, force_reload=True)
+model_detect_text = load_model(r"D:\DUT\trained_model_6.h5", compile=False)
 
 def getPlateTextFromImage(imgPath):
     image = cv2.imread(imgPath)
-    model = torch.hub.load('ultralytics/yolov5', 'custom',
-                        path=best_path, force_reload=True)
-    results = model(image)
+    results = model_detect_frame(image)
     df = results.pandas().xyxy[0]
     for obj in df.iloc:
 
@@ -92,7 +93,6 @@ def getPlateTextFromImage(imgPath):
     cv2.waitKey(0)
     # Character Recognition
 
-    model = load_model(r"D:\DUT\trained_model_6.h5", compile=False)
     chars = [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
         'H', 'K', 'L', 'M', 'N', 'P', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'
@@ -124,7 +124,7 @@ def getPlateTextFromImage(imgPath):
 
     # Nhan dang chu
     characters = np.array(characters)
-    probs = model.predict(characters)
+    probs = model_detect_text.predict(characters)
 
     # Lay tung ki tu dua vao nhan
     for prob in probs:
