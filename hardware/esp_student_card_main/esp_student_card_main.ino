@@ -25,6 +25,7 @@ const char* ssid = "Wakumo-GUEST";
 const char* password = "waku1235";
 
 #define FLASH_GPIO_NUM 4
+#define BUILT_IN_LED 33
 #define CAMERA_MODEL_AI_THINKER
 
 #if defined(CAMERA_MODEL_AI_THINKER)
@@ -52,6 +53,11 @@ const char* password = "waku1235";
 // Photo File Name to save in SPIFFS
 #define FILE_PHOTO "/student_card.jpg"
 
+//Config
+void software_serial_config(){
+  Serial1.begin(115200,SERIAL_8N1,14,15); // checkin
+  Serial2.begin(115200,SERIAL_8N1,14,15); // checkout
+}
 
 void connectWifi() {
   // Connect to Wi-Fi
@@ -78,7 +84,9 @@ void initSpiffs() {
 }
 
 void configCam() {
+  //Config flash
   pinMode(FLASH_GPIO_NUM, OUTPUT);
+  pinMode(BUILT_IN_LED, OUTPUT);
   //Config camera
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -126,6 +134,8 @@ void configCam() {
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
+  } else{
+    Serial.println("Camera init success");
   }
 }
 
@@ -144,6 +154,14 @@ void turnOnFlash() {
 
 void turnOffFlash() {
   digitalWrite(FLASH_GPIO_NUM, LOW);
+}
+
+void turnOnLed(){
+  digitalWrite(BUILT_IN_LED, HIGH);
+}
+
+void turnOffLed(){
+  digitalWrite(BUILT_IN_LED, LOW);
 }
 
 // Capture Photo and Save it to SPIFFS
@@ -308,14 +326,20 @@ String postStudentCard() {
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  //disable brownout detector
   Serial.begin(115200);
-  Serial.println();
+  Serial.println("DEBUG SERIAL PORT READY!");
+  software_serial_config();
 
   connectWifi();
   initSpiffs();
   configCam();
+  Serial.println("");
 
-  postStudentCard();
+  // postStudentCard();
 }
 
 void loop() {
+  turnOnLed();
+  delay(1000);
+  turnOffLed();
+  delay(1000);
 }
