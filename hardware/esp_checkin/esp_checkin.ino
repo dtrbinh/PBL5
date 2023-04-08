@@ -15,14 +15,14 @@
 // WiFiClient client;
 
 //remote
-String serverName = "example.com";  // OR REPLACE WITH YOUR DOMAIN NAME
-const int serverPort = 443;         //server port for HTTPS
+String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
+const int serverPort = 443; //server port for HTTPS
 String serverPath = "/upload.php";
 WiFiClientSecure client;
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-const char* ssid = "freewifi";
-const char* password = "123512356";
+const char* ssid = "Wakumo-GUEST";
+const char* password = "waku1235";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -53,37 +53,18 @@ const char* password = "123512356";
 // Photo File Name to save in SPIFFS
 #define FILE_PHOTO "/student_card.jpg"
 
-#define GREEN_LED a 
-#define YELLOW_LED b
-#define RED_LED c
-
-#define ECHO 2
-#define TRIGGER 16
-
-
-//Global variables
-bool isTakingPicture = false;
-unsigned long connectWifiTimer = 0;
-
-
-//Config region
-void software_serial_config() {
-  Serial1.begin(115200, SERIAL_8N1, 14, 15);  // checkin
-  Serial2.begin(115200, SERIAL_8N1, 12, 13);  // checkout
+//Config
+void software_serial_config(){
+  Serial1.begin(115200, SERIAL_8N1, 15, 14); // main: 14rx 15tx - checkin: 15rx - 14tx
 }
 
 void connectWifi() {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi...");
-  connectWifiTimer = millis();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
-    if (millis() - connectWifiTimer >= 10000){
-      Serial.println("Connect wifi timeout! RESTART");
-      ESP.restart();
-    }
   }
   Serial.println();
   // Print ESP32 Local IP Address
@@ -138,14 +119,12 @@ void configCam() {
   // FRAMESIZE_UXGA (1600 x 1200)
 
   if (psramFound()) {
-    Serial.println("Camera settings: 1");
     config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 10;
+    config.jpeg_quality = 5;
     config.fb_count = 2;
   } else {
-    Serial.println("Camera settings: 2");
     config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 15;
+    config.jpeg_quality = 10;
     config.fb_count = 1;
   }
 
@@ -154,17 +133,9 @@ void configCam() {
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
-  } else {
+  } else{
     Serial.println("Camera init success");
   }
-}
-
-void configUltrasonicSensor() {
-  pinMode(TRIGGER, OUTPUT);
-  pinMode(ECHO, INPUT);
-}
-
-void configStatusLed() {
 }
 
 //Function
@@ -184,53 +155,55 @@ void turnOffFlash() {
   digitalWrite(FLASH_GPIO_NUM, LOW);
 }
 
-void turnOnLed() {
+void turnOnLed(){
   digitalWrite(BUILT_IN_LED, HIGH);
 }
 
-void turnOffLed() {
+void turnOffLed(){
   digitalWrite(BUILT_IN_LED, LOW);
 }
 
 // Capture Photo and Save it to SPIFFS
 camera_fb_t* capturePhoto() {
-  if (isTakingPicture) return NULL;
   camera_fb_t* fb = NULL;  // pointer
+
   Serial.println("Taking a photo...");
-  turnOnFlash();
-  fb = esp_camera_fb_get();
-  delay(100);
-  turnOffFlash();
-  if (!fb) {
-    Serial.println("Camera capture failed");
-    return NULL;
-  } else {
-    Serial.print("Captured image. Image size: ");
-    Serial.print(fb->len);
-    Serial.println("bytes");
-    esp_camera_fb_return(fb);
-    return fb;
-  }
+    turnOnFlash();
+    fb = esp_camera_fb_get();
+    delay(100);
+    turnOffFlash();
+    if (!fb) {
+      Serial.println("Camera capture failed");
+      return NULL;
+    } else{
+      Serial.print("Captured image. Image size: ");
+      Serial.print(fb->len);
+      Serial.println( "bytes");
+      esp_camera_fb_return(fb);
+      return fb;
+    }
 }
 
 void capturePhotoSaveSpiffs() {
-  isTakingPicture = true;
   camera_fb_t* fb = NULL;  // pointer
   bool ok = 0;             // Boolean indicating if the picture has been taken correctly
+
   do {
     // Take a photo with the camera
     Serial.println("Taking a photo...");
     turnOnFlash();
     fb = esp_camera_fb_get();
+    delay(100);
     turnOffFlash();
     if (!fb) {
       Serial.println("Camera capture failed");
-      isTakingPicture = false;
       return;
     }
+
     // Photo file name
     Serial.printf("Picture file name: %s\n", FILE_PHOTO);
     File file = SPIFFS.open(FILE_PHOTO, FILE_WRITE);
+
     // Insert the data in the photo file
     if (!file) {
       Serial.println("Failed to open file in writing mode");
@@ -249,7 +222,6 @@ void capturePhotoSaveSpiffs() {
     // check if file has been correctly saved in SPIFFS
     ok = checkPhoto(SPIFFS);
   } while (!ok);
-  isTakingPicture = false;
 }
 
 void readSpiffImage() {
@@ -273,141 +245,29 @@ void readSpiffImage() {
     file.close();
   }
 }
- 
-//Call api read student card
-String postStudentCard() {
-  String getAll;
-  String getBody;
 
-  camera_fb_t* fb = NULL;
-  fb = capturePhoto();
-  if (!fb) {
-    Serial.println("Camera capture failed");
-    delay(500);
-    ESP.restart();
-  }
-
-  Serial.println("Connecting to server: " + serverName);
-
-  client.setInsecure();
-  if (client.connect(serverName.c_str(), serverPort)) {
-    Serial.println("Connection successful!");
-    String head = "--PBL5\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "\r\n--PBL5--\r\n";
-
-    uint32_t imageLen = fb->len;
-    uint32_t extraLen = head.length() + tail.length();
-    uint32_t totalLen = imageLen + extraLen;
-
-    client.println("POST " + serverPath + " HTTP/1.1");
-    client.println("Host: " + serverName);
-    client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data; boundary=PBL5");
-    client.println();
-    client.print(head);
-
-    uint8_t* fbBuf = fb->buf;
-    size_t fbLen = fb->len;
-    for (size_t n = 0; n < fbLen; n = n + 1024) {
-      if (n + 1024 < fbLen) {
-        client.write(fbBuf, 1024);
-        fbBuf += 1024;
-      } else if (fbLen % 1024 > 0) {
-        size_t remainder = fbLen % 1024;
-        client.write(fbBuf, remainder);
-      }
-    }
-    client.print(tail);
-
-    //set timeout 10s
-    int timoutTimer = 10000;
-    long startTimer = millis();
-    boolean state = false;
-
-    while ((startTimer + timoutTimer) > millis()) {
-      Serial.print(".");
-      delay(100);
-      while (client.available()) {
-        char c = client.read();
-        if (c == '\n') {
-          if (getAll.length() == 0) { state = true; }
-          getAll = "";
-        } else if (c != '\r') {
-          getAll += String(c);
-        }
-        if (state == true) { getBody += String(c); }
-        startTimer = millis();
-      }
-      if (getBody.length() > 0) { break; }
-    }
-    Serial.println();
-    client.stop();
-    Serial.println(getBody);
-  } else {
-    getBody = "Connection to " + serverName + " failed.";
-    Serial.println(getBody);
-  }
-  return getBody;
-}
-
-int getDistance() {
-  unsigned long duration;    // biến đo thời gian
-  int distance;              // biến lưu khoảng cách
-  digitalWrite(TRIGGER, 0);  // tắt chân trig
-  delayMicroseconds(2);
-  digitalWrite(TRIGGER, 1);  // phát xung từ chân trig
-  delayMicroseconds(10);     // xung có độ dài 10 microSeconds
-  digitalWrite(TRIGGER, 0);  // tắt chân trig
-  duration = pulseIn(ECHO, HIGH);
-  distance = int(duration * 0.034 / 2);
-
-  Serial.print("Time: ");
-  Serial.println(millis());
-
-  delay(1000);
-  Serial.print("Distance: " + distance);
-  Serial.println(" cm.");
-  return distance;
-}
-
-// Main func  
+// Main func
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  //disable brownout detector
   Serial.begin(115200);
   Serial.println("DEBUG SERIAL PORT READY!");
   software_serial_config();
 
-  configStatusLed();
-  configUltrasonicSensor();
-
-  connectWifi();
   initSpiffs();
   configCam();
   Serial.println("");
 
-  capturePhoto();
 }
 
 void loop() {
-  // int distance = getDistance();
-  // if (distance <= 5  && distance > 0 && distance != NULL) {
-  //   capturePhoto();
-  //   isTakingPicture = true;
-  // } else {
-  //   isTakingPicture = false;
-  // }
-  if(Serial.available()){
-    String msg = Serial.readString();
+  if(Serial1.available()){
+    String msg = Serial1.readString();
     msg.trim();
-    Serial.println("Received: " + msg);
-    if (msg == "checkin"){
-      Serial.println("CAMERA CHECKIN CAPTURING...");
-      Serial1.write("CAPTURE");
-    }else if (msg == "checkout"){
-      Serial.println("CAMERA CHECKOUT CAPTURING...");
-      Serial2.write("CAPTURE");
+    if (msg = "CAPTURE"){
+      Serial.println("Received message: " + msg);
+      capturePhoto();
     } else{
-      Serial.println("Undefined command message: " + msg);
+      Serial.print("Message: " + msg);
     }
   }
 }
