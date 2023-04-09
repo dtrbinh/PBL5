@@ -1,20 +1,23 @@
+from sqlalchemy import create_engine
 from .extension import db
+engine = create_engine('sqlite:///database.db')
 
-class Students(db.Model):
+class Student(db.Model):
     id = db.Column(db.String(20), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     class_name = db.Column(db.String(20), nullable=False)
     faculty = db.Column(db.String(100), nullable=False)
 
-    def __init__(self, name, class_name, faculty):
+    def __init__(self, id, name, class_name, faculty):
+        self.id = id
         self.name = name
         self.class_name = class_name
         self.faculty = faculty
 
-class CheckIns(db.Model):
+class CheckIn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     plate_number = db.Column(db.String(20), nullable=False)
-    student_id = db.Column(db.String(20), db.ForeignKey("students.id"), nullable = False)
+    student_id = db.Column(db.String(20), db.ForeignKey("student.id"), nullable = False)
     time_check_in = db.Column(db.DateTime)
 
     def __init__(self, plate_number, student_id, time_check_in):
@@ -22,12 +25,15 @@ class CheckIns(db.Model):
         self.student_id = student_id
         self.time_check_in = time_check_in
 
-class CheckOuts(db.Model):
+class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    check_in_id = db.Column(db.Integer, db.ForeignKey("check_ins.id"), nullable = False)
+    plate_number = db.Column(db.String(20), nullable=False)
+    student_id = db.Column(db.String(20), db.ForeignKey("student.id"), nullable = False)
+    time_check_in = db.Column(db.DateTime)
     time_check_out = db.Column(db.DateTime)
 
-    def __init__(self, plate_number, check_in_id, time_check_out):
-        self.plate_number = plate_number
-        self.check_in_id = check_in_id
+    def __init__(self, time_check_in, time_check_out, plate_number, student_id):
+        self.time_check_in = time_check_in
         self.time_check_out = time_check_out
+        self.plate_number = plate_number
+        self.student_id = student_id

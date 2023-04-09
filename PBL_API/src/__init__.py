@@ -1,8 +1,8 @@
-from flask import Flask, request, Blueprint
-from .controller.studentController import students
+from flask import Flask
+from .controller.student_controller import students
+from .controller.check_in_controller import check_ins
+from .controller.log_controller import logs
 from .extension import db, ma
-from .model import Students, CheckIns, CheckOuts
-import os
 
 def create_app(config_file = "config.py"):
     app = Flask(__name__)
@@ -12,4 +12,6 @@ def create_app(config_file = "config.py"):
     with app.app_context():
         db.create_all()
     app.register_blueprint(students)
+    app.register_blueprint(check_ins)
+    app.register_blueprint(logs)
     return app
