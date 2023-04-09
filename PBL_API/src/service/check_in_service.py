@@ -50,20 +50,25 @@ def create_check_in_service():
 
             # nếu có plate_number
             if plate_number is None:
-                return jsonify({
-                    "message": "Can not get plate text number",
-                    "status": 0
-                }), 400
+                return jsonify(
+                    {
+                        "message": "Can not get plate text number",
+                        "status": 0
+                    }
+                ), 400
             elif len(barcodes) <= 0:
-                return jsonify({
-                    "message": "Can not get student id in student card",
-                    "status": 0
-                }), 400
+                return jsonify(
+                    {
+                        "message": "Can not get student id in student card",
+                        "status": 0
+                    }
+                ), 400
             else:
                 barcode_data = barcodes[0].data.decode('utf-8')
                 student_id = barcode_data
 
                 student = find_student_by_id_service(student_id)
+                print(student)
 
                 if student: 
                     time_check_in = datetime.now()
@@ -83,10 +88,12 @@ def create_check_in_service():
                         "status": 1
                     }), 201
                 else:
-                    return jsonify({
-                        "message": "Student is not exist in system",
-                        "status": 0
-                    }), 400
+                    return jsonify(
+                        {
+                            "message": "Student is not exist in system",
+                            "status": 0
+                        }
+                    ), 400
         except Exception as e:
             db.session.rollback()
             return jsonify({

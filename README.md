@@ -8,6 +8,7 @@ FORM-DATA: student_card_img và plate_img
 
 # API check-out: /check-outs
 METHOD: POST
+
 FORM-DATA: student_card_img và plate_img
 
 # API lấy tất cả lịch sử ra vào: /logs

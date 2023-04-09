@@ -22,5 +22,7 @@ def create_student_service():
     return student_schema.jsonify(student)
 
 def find_student_by_id_service(id):
-    student = db.session.query(Student).filter(Student.id == id)
+    query = db.session.query(Student).filter(Student.id == id)
+    student = db.session.query(Student).filter(Student.id == id).first()
+    print('student ', student)
     return student

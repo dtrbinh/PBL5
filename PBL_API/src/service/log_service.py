@@ -91,13 +91,14 @@ def create_log_service():
                         "status": 1
                     }), 201
                 else:
-                    return jsonify({
+                    return jsonify(
+                        {
                         "message": "Student have not checked in",
                         "status": 0
-                    }), 400
+                        }
+                    ), 400
         except Exception as e:
             db.session.rollback()
-            print(e)
             return jsonify({
                 "message": "Check out failed",
                 "status": 0
