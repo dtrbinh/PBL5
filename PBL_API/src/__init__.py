@@ -2,6 +2,7 @@ from flask import Flask
 from .controller.student_controller import students
 from .controller.check_in_controller import check_ins
 from .controller.log_controller import logs
+from .controller.plate_controller import plates
 from .extension import db, ma
 
 def create_app(config_file = "config.py"):
@@ -14,4 +15,5 @@ def create_app(config_file = "config.py"):
     app.register_blueprint(students)
     app.register_blueprint(check_ins)
     app.register_blueprint(logs)
+    app.register_blueprint(plates)
     return app

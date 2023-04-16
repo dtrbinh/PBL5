@@ -4,12 +4,12 @@
 
 # API check-in: /check-ins
 METHOD: POST
-FORM-DATA: student_card_img và plate_img
+BODY: plate_number, student_id, img_check_in
 
 # API check-out: /check-outs
 METHOD: POST
 
-FORM-DATA: student_card_img và plate_img
+BODY: plate_number, student_id, img_check_out
 
 # API lấy tất cả lịch sử ra vào: /logs
 METHOD: GET
