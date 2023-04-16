@@ -13,7 +13,8 @@ FORM_DATA: student_card_img
 METHOD POST
 FORM_DATA: plate_img
 
-![image](https://user-images.githubusercontent.com/93651748/232287586-582a70f1-718f-4ce8-b3be-a13c789b4d79.png)
+![image](https://user-images.githubusercontent.com/93651748/232288098-6901e7e8-6eec-4e7c-b46e-7589c816f704.png)
+
 
 # API check-in: /check-ins
 METHOD: POST
