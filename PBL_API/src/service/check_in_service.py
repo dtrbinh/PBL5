@@ -24,16 +24,14 @@ def create_check_in_service():
             db.session.add(check_in)
             db.session.commit()
             return jsonify({
-                    "data": {
-                        "check_in": {
-                            "id": check_in.id,
-                            "student_id": student_id,
-                            "plate_number": plate_number,
-                            "time_check_in": time_check_in,
-                            "img_check_in": img_check_in
-                            },
-                        "message": "Check in success"
+                    "check_in": {
+                        "id": check_in.id,
+                        "student_id": student_id,
+                        "plate_number": plate_number,
+                        "time_check_in": time_check_in,
+                        "img_check_in": img_check_in
                     },
+                    "message": "Check in success",
                     "status": 1
                 }), 201
         except Exception:

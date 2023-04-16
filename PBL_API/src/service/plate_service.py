@@ -40,7 +40,7 @@ def read_plate_text_service():
                     "message": "SUCCEESS",
                     "plate_img": url_for('static', filename='/' + filename, _external=True),
                     "status": 1
-                })
+                }), 201
     else:
         return jsonify({
                 "message": "Validation request error",

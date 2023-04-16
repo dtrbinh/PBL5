@@ -44,8 +44,7 @@ def create_log_service():
                 db.session.delete(check_in_find)
                 db.session.commit()
                 return jsonify({
-                    "data": {
-                        "log": {
+                    "log": {
                             "id": new_log.id,
                             "time_check_out": new_log.time_check_out,
                             "time_check_in": new_log.time_check_in,
@@ -53,9 +52,8 @@ def create_log_service():
                             "student_id": new_log.student_id,
                             "img_check_in": new_log.img_check_in,
                             "img_check_out": new_log.img_check_out
-                        },
-                    "message": "Check out success"
                     },
+                    "message": "Check out success",
                     "status": 1
                 }), 201
             else:

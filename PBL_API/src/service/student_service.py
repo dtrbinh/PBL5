@@ -64,7 +64,7 @@ def scan_student_card_service():
             student = find_student_by_id_service(student_id)
             if student:
                 return jsonify ({
-                    "data": {
+                    "student": {
                         "student_id": student.id,
                         "name": student.name,
                         "class_name": student.class_name,
