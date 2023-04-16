@@ -6,14 +6,14 @@
 METHOD: POST
 FORM_DATA: student_card_img
 
-![image](https://user-images.githubusercontent.com/93651748/232287500-b8b0e519-33c9-4dfc-a8ce-373051019565.png)
+![image](https://user-images.githubusercontent.com/93651748/232287571-49f0025a-1ba3-4334-a4f9-5354b2afea03.png)
+
 
 # API đọc biển số xe: /plates/read-plate-text
 METHOD POST
 FORM_DATA: plate_img
 
-![image](https://user-images.githubusercontent.com/93651748/232287528-bdffb00f-f4ad-424e-a642-8f18ddcbbb77.png)
-
+![image](https://user-images.githubusercontent.com/93651748/232287586-582a70f1-718f-4ce8-b3be-a13c789b4d79.png)
 
 # API check-in: /check-ins
 METHOD: POST
