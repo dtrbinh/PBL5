@@ -74,15 +74,21 @@ def getPlateTextFromImage(imgPath):
     new_arr = arr[(arr[:, 2] < threshold_w) & (arr[:, 3] < threshold_h)]
 
 
-    def compare(rect1, rect2):
-        if abs(rect1[1] - rect2[1]) > 10:
-            return rect1[1] - rect2[1]
+    line1 = []
+    line2 = []
+    mean_y = np.mean(arr[:,1])
+    for box in new_arr:
+        x,y,w,h  =box
+        if y > mean_y * 1.2:
+            line2.append(box)
         else:
-            return rect1[0] - rect2[0]
-
+            line1.append(box)
 
     # Sắp xếp từ trái sang phải, trên xuống dưới
-    boundingBoxes = sorted(new_arr, key=functools.cmp_to_key(compare))
+    # boundingBoxes = sorted(new_arr, key=functools.cmp_to_key(compare))
+    line1 = sorted(line1, key=lambda box: box[0])
+    line2 = sorted(line2, key=lambda box: box[0])
+    boundingBoxes = line1+line2
 
     img_with_boxes = imutils.resize(image.copy(), width=600)
     image = imutils.resize(image.copy(), width=600)
