@@ -1,7 +1,7 @@
 from datetime import date
 import os
 from random import randint
-from util.model import getPlateTextFromImage
+from ..util.model import getPlateTextFromImage
 from flask import jsonify, request, jsonify, url_for
 
 from werkzeug.utils import secure_filename
@@ -18,10 +18,10 @@ def read_plate_text_service():
             filename = secure_filename(plate_image.filename)
             filename = f'{prefix}-{filename}'
             plate_image.save(os.path.join(
-                'static/upload',
+                'src/static/upload',
                 filename
             ))
-            imgPath = f'./static/upload/{filename}'
+            imgPath = f'src/static/upload/{filename}'
 
             # lấy text trên biển số xe
             plate_number = getPlateTextFromImage(imgPath)

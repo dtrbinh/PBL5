@@ -40,7 +40,6 @@ def create_student_service():
             }), 400
 
 def find_student_by_id_service(id):
-    query = db.session.query(Student).filter(Student.id == id)
     student = db.session.query(Student).filter(Student.id == id).first()
     return student
 

@@ -1,16 +1,9 @@
 from datetime import date, datetime
-import os
-from random import randint
 
-import cv2
-import numpy as np
-from util.model import getPlateTextFromImage
 from src.extension import db
 from src.pbl5_ma import CheckInSchema, LogSchema
 from src.model import Log
 from flask import jsonify, request, jsonify
-from pyzbar import pyzbar
-from werkzeug.utils import secure_filename
 from src.service.check_in_service import find_by_student_id_and_plate_number_service
 
 check_in_schema = CheckInSchema()

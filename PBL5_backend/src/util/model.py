@@ -10,10 +10,10 @@ import imutils
 from keras.models import load_model
 from tensorflow.keras.utils import img_to_array
 
-best_path = r"D:\DUT\best.pt"
+best_path = "src/util/best.pt"
 model_detect_frame = torch.hub.load('ultralytics/yolov5', 'custom',
                         path=best_path, force_reload=True)
-model_detect_text = load_model(r"D:\DUT\trained_model_6.h5", compile=False)
+model_detect_text = load_model("src/util/trained_model_6.h5", compile=False)
 
 def getPlateTextFromImage(imgPath):
     image = cv2.imread(imgPath)
