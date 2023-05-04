@@ -1,6 +1,6 @@
 # PBL5
 # Cài thư viện: pip install -r requirements.txt
-# chạy: python main.py
+# chạy: python app.py
 
 # API quét mã barcode thẻ SV: /students/scan-card
 METHOD: POST

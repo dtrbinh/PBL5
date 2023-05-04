@@ -4,34 +4,61 @@ import numpy as np
 import cv2
 from imutils import perspective
 import numpy as np
-import functools
 from skimage.filters import threshold_local
 import imutils
 from keras.models import load_model
-from tensorflow.keras.utils import img_to_array
 
 best_path = "src/util/best.pt"
 model_detect_frame = torch.hub.load('ultralytics/yolov5', 'custom',
                         path=best_path, force_reload=True)
 model_detect_text = load_model("src/util/trained_model_6.h5", compile=False)
+def rotate_and_crop(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    max_area = 0
+    max_cnt = None
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area > max_area:
+            max_area = area
+            max_cnt = cnt
+    x,y,w,h = cv2.boundingRect(max_cnt)
+    
+    rect = cv2.minAreaRect(max_cnt)
+    ((cx,cy),(cw,ch),angle) = rect
+    
+    M = cv2.getRotationMatrix2D((cx,cy), angle-90, 1)
+    rotated = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
+    
+    gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    max_area = 0
+    max_cnt = None
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area > max_area:
+            max_area = area
+            max_cnt = cnt
+    x,y,w,h = cv2.boundingRect(max_cnt)
+    cropped = rotated[y:y+h, x:x+w]
+    return cropped
+
 
 def getPlateTextFromImage(imgPath):
     image = cv2.imread(imgPath)
     results = model_detect_frame(image)
     df = results.pandas().xyxy[0]
     for obj in df.iloc:
-
         xmin = float(obj['xmin'])
         xmax = float(obj['xmax'])
         ymin = float(obj['ymin'])
         ymax = float(obj['ymax'])
-        conf = float(obj['confidence'])
-        class_name = obj['name']
     coord = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]])
     LpRegion = perspective.four_point_transform(image, coord)
-    # cv2.imshow('a', LpRegion)
-    # cv2.waitKey(0)
-
+    LpRegion = rotate_and_crop(LpRegion)
     image = LpRegion.copy()
     V = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))[2]
     # adaptive threshold
@@ -40,8 +67,7 @@ def getPlateTextFromImage(imgPath):
     # Chuyen den thanh trang
     thresh = cv2.bitwise_not(thresh)
     thresh = imutils.resize(thresh, width=600)
-    # cv2.imshow('a', thresh)
-    # cv2.waitKey(0)
+
     _, labels = cv2.connectedComponents(thresh)
     mask = np.zeros(thresh.shape, dtype="uint8")
     total_pixels = thresh.shape[0] * thresh.shape[1]
@@ -55,8 +81,6 @@ def getPlateTextFromImage(imgPath):
         numPixels = cv2.countNonZero(labelMask)
         if numPixels > lower and numPixels < upper:
             mask = cv2.add(mask, labelMask)
-    # cv2.imshow('a', mask)
-    cv2.waitKey(0)
 
     cnts, _ = cv2.findContours(
         mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -85,7 +109,6 @@ def getPlateTextFromImage(imgPath):
             line1.append(box)
 
     # Sắp xếp từ trái sang phải, trên xuống dưới
-    # boundingBoxes = sorted(new_arr, key=functools.cmp_to_key(compare))
     line1 = sorted(line1, key=lambda box: box[0])
     line2 = sorted(line2, key=lambda box: box[0])
     boundingBoxes = line1+line2
@@ -96,8 +119,6 @@ def getPlateTextFromImage(imgPath):
         x, y, w, h = bbox
         cv2.rectangle(img_with_boxes, (x, y), (x+w, y+h), (0, 0, 255), 2)
 
-    # cv2.imshow('a', img_with_boxes)
-    cv2.waitKey(0)
     # Character Recognition
 
     chars = [

@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/a5d89491-b397-454f-be9e-5b93ace0832f/resourceGroups/appsvc_linux_centralus_basic/providers/Microsoft.Web/sites/pbl5api",
+    "appService.deploySubpath": "."
+}
