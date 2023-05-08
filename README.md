@@ -24,8 +24,7 @@ BODY: plate_number, student_id, img_check_in
 ![image](https://user-images.githubusercontent.com/93651748/230785693-17bfb386-ad1c-4d99-96f2-14ac01679912.png)
 
 -- Thành công:
-![image](https://user-images.githubusercontent.com/93651748/232286912-74b3380f-6908-40c0-b561-2c2264941fe3.png)
-
+![image](https://user-images.githubusercontent.com/93651748/236797702-f78de95e-1416-4870-9e6e-33fcb8d32f45.png)
 
 # API check-out: /check-outs
 METHOD: POST
