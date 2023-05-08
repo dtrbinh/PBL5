@@ -16,7 +16,7 @@ FORM_DATA: plate_img
 ![image](https://user-images.githubusercontent.com/93651748/232288098-6901e7e8-6eec-4e7c-b46e-7589c816f704.png)
 
 
-# API check-in: /check-ins/
+# API check-in: /check-ins
 METHOD: POST
 BODY: plate_number, student_id, img_check_in
 
@@ -27,7 +27,7 @@ BODY: plate_number, student_id, img_check_in
 ![image](https://user-images.githubusercontent.com/93651748/232286912-74b3380f-6908-40c0-b561-2c2264941fe3.png)
 
 
-# API check-out: /check-outs/
+# API check-out: /check-outs
 METHOD: POST
 
 BODY: plate_number, student_id, img_check_out

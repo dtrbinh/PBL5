@@ -71,7 +71,7 @@ def scan_student_card_service():
                     },
                     "status": 1,
                     "message": "SUCCESS"
-                }), 200
+                }), 201
             else:
                 return jsonify({
                     "message": "Student not found",
