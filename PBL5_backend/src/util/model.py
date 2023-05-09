@@ -9,6 +9,7 @@ import imutils
 from keras.models import load_model
 
 best_path = "src/util/best.pt"
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
 model_detect_frame = torch.hub.load('ultralytics/yolov5', 'custom',
                         path=best_path, force_reload=True)
 model_detect_text = load_model("src/util/trained_model_6.h5", compile=False)
