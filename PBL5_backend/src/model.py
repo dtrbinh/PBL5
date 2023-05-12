@@ -16,29 +16,29 @@ class Student(db.Model):
 
 class CheckIn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    plate_number = db.Column(db.String(20), nullable=False)
+    number_plate = db.Column(db.String(20), nullable=False)
     student_id = db.Column(db.String(20), db.ForeignKey("student.id"), nullable = False)
     time_check_in = db.Column(db.DateTime)
     img_check_in = db.Column(db.String(255), nullable = False)
-    def __init__(self, plate_number, student_id, time_check_in, img_check_in):
-        self.plate_number = plate_number
+    def __init__(self, number_plate, student_id, time_check_in, img_check_in):
+        self.number_plate = number_plate
         self.student_id = student_id
         self.time_check_in = time_check_in
         self.img_check_in = img_check_in
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    plate_number = db.Column(db.String(20), nullable=False)
+    number_plate = db.Column(db.String(20), nullable=False)
     student_id = db.Column(db.String(20), db.ForeignKey("student.id"), nullable = False)
     time_check_in = db.Column(db.DateTime)
     time_check_out = db.Column(db.DateTime)
     img_check_in = db.Column(db.String(255), nullable = False)
     img_check_out = db.Column(db.String(255), nullable = False)
 
-    def __init__(self, time_check_in, time_check_out, plate_number, student_id, img_check_in, img_check_out):
+    def __init__(self, time_check_in, time_check_out, number_plate, student_id, img_check_in, img_check_out):
         self.time_check_in = time_check_in
         self.time_check_out = time_check_out
-        self.plate_number = plate_number
+        self.number_plate = number_plate
         self.student_id = student_id
         self.img_check_in = img_check_in
         self.img_check_out = img_check_out

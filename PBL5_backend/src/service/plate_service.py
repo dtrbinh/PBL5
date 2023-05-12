@@ -24,26 +24,33 @@ def read_plate_text_service():
             imgPath = f'src/static/upload/{filename}'
 
             # lấy text trên biển số xe
-            plate_number = getPlateTextFromImage(imgPath)
+            number_plate = getPlateTextFromImage(imgPath)
 
             # nếu có plate_number
-            if plate_number is None:
-                return jsonify(
-                    {
-                        "message": "Can not get plate text number",
-                        "status": 0
-                    }
-                ), 400
-            else:
-                print(filename)
+            if number_plate is None:
                 return jsonify({
-                    "plate_text": plate_number,
-                    "message": "SUCCEESS",
-                    "plate_img": url_for('static', filename='upload/' + filename, _external=True),
+                    "data": {
+                        "number_plate": "undefined",
+                        "plate_img": "undefined",
+                    },
+                    "message": "Can not get plate text number",
+                    "status": 0
+                }), 400
+            else:
+                return jsonify({
+                    "data": {
+                        "number_plate": number_plate,
+                        "plate_img": url_for('static', filename='upload/' + filename, _external=True),
+                    },
+                    "message": "SUCCESS",
                     "status": 1
                 }), 201
     else:
         return jsonify({
+                "data": {
+                    "number_plate": "undefined",
+                    "plate_img": "undefined",
+                },
                 "message": "Validation request error",
                 "status": 0
             }), 400
