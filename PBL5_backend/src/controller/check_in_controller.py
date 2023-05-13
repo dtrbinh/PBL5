@@ -11,15 +11,15 @@ def get_all_check_ins():
 
 # Add new check in
 @check_ins.route('', methods=['POST'])
-def create():
+def create_check_in():
     return create_check_in_service()
 
 # Update check in
 @check_ins.route('/<int:id>', methods=['PUT'])
-def update(id):
+def update_check_in_by_id(id):
     return update_check_in_by_id_service(id)
 
 # delete check in
 @check_ins.route('/<int:id>', methods=['DELETE'])
-def delete(id):
+def delete_check_in_by_id(id):
     return delete_check_in_by_id_service(id)

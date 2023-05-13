@@ -20,10 +20,10 @@ def create_log():
 
 # update log
 @logs.route('/<int:id>', methods=['PUT'])
-def update(id):
+def update_log(id):
     return update_log_by_id_service(id)
 
 # delete log
 @logs.route('/<int:id>', methods=['DELETE'])
-def delete(id):
+def delete_log_by_id(id):
     return delete_log_by_id_service(id)
