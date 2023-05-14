@@ -127,10 +127,39 @@ def scan_student_card_service():
     if (('student_card_img' in request.files)):
         student_card_image = request.files['student_card_img']
          # Đọc mã số sv từ barcode
-        img = cv2.imdecode(np.frombuffer(student_card_image.read(), np.uint8), cv2.IMREAD_COLOR)
-        barcodes = pyzbar.decode(img)
-        if len(barcodes) <= 0:
-            return jsonify({
+        try:
+
+            img = cv2.imdecode(np.frombuffer(student_card_image.read(), np.uint8), cv2.IMREAD_COLOR)
+            barcodes = pyzbar.decode(img)
+            if len(barcodes) <= 0:
+                return jsonify({
+                            "data": {
+                                "student_id": 'undefined',
+                                "name": 'undefined',
+                                "class_name": 'undefined',
+                                "faculty": 'undefined'
+                            },
+                            "status": 0,
+                            "message": "Can not get student id in student card",
+                        }), 400
+            else:
+                barcode_data = barcodes[0].data.decode('utf-8')
+                student_id = barcode_data
+
+                student = Student.query.get(student_id)
+                if student:
+                    return jsonify ({
+                        "data": {
+                            "student_id": student.id,
+                            "name": student.name,
+                            "class_name": student.class_name,
+                            "faculty": student.faculty
+                        },
+                        "status": 1,
+                        "message": "SUCCESS"
+                    }), 201
+                else:
+                    return jsonify({
                         "data": {
                             "student_id": 'undefined',
                             "name": 'undefined',
@@ -138,35 +167,19 @@ def scan_student_card_service():
                             "faculty": 'undefined'
                         },
                         "status": 0,
-                        "message": "Can not get student id in student card",
-                    }), 400
-        else:
-            barcode_data = barcodes[0].data.decode('utf-8')
-            student_id = barcode_data
-
-            student = Student.query.get(student_id)
-            if student:
-                return jsonify ({
-                    "data": {
-                        "student_id": student.id,
-                        "name": student.name,
-                        "class_name": student.class_name,
-                        "faculty": student.faculty
-                    },
-                    "status": 1,
-                    "message": "SUCCESS"
-                }), 201
-            else:
-                return jsonify({
-                    "data": {
+                        "message": "Student have not in database"
+                    }), 404
+        except Exception as e:
+            return jsonify({
+                "data": {
                         "student_id": 'undefined',
                         "name": 'undefined',
                         "class_name": 'undefined',
                         "faculty": 'undefined'
-                    },
-                    "status": 0,
-                    "message": "Student have not in database"
-                }), 404
+                },
+                "status": 0,
+                "message": "FAILED"
+            }), 400
     else: 
         return jsonify({
                 "data": {
