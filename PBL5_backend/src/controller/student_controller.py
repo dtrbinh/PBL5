@@ -12,7 +12,7 @@ def get_all_students():
 
 # Find student by id
 @students.route("/<string:id>", methods=['GET'])
-def get_student_by_id(id):
+def find_student_by_id(id):
     return find_student_by_id_service(id)
 
 # Scan card
@@ -22,21 +22,21 @@ def scan_student_card():
 
 # Add new student
 @students.route('', methods=['POST'])
-def create():
+def create_student():
     return create_student_service()
 
 # Add new many students
 @students.route('/insertMany', methods=['POST'])
-def create_new_students():
+def create_students():
     return create_students_service()
 
 # update student
 @students.route("/<string:id>", methods=['PUT'])
-def update_book_by_id(id):
+def update_student_by_id(id):
     return update_student_by_id_service(id)
 
 # delete student
 @students.route("/<string:id>", methods=['DELETE'])
-def delete_book_by_id(id):
+def delete_student_by_id(id):
     return delete_student_by_id_service(id)
 

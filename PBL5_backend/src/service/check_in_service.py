@@ -85,6 +85,10 @@ def update_check_in_by_id_service(id):
             except Exception:
                 db.session.rollback()
                 return jsonify({"message": "Can not update check in!"}), 400
+        else:
+            return jsonify({
+                        "message": "Validation request error"
+                    }), 400
     else:
         return jsonify({"message": "Check in not found!"}), 404
     
