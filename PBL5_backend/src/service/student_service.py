@@ -4,6 +4,7 @@ from src.extension import db
 from src.pbl5_ma import StudentSchema
 from src.model import Student
 from flask import jsonify, request
+from unidecode import unidecode
 
 student_schema = StudentSchema()
 student_schemas = StudentSchema(many=True)
@@ -163,6 +164,9 @@ def scan_student_card_service():
                 print(student_id)
                 student = Student.query.get(student_id)
                 if student:
+                    if 'arduino' in request.form and request.form['arduino'] == "1":
+                        student.name = unidecode(student.name).replace(" ", "")
+                        student.faculty = unidecode(student.faculty).replace(" ", "")
                     return jsonify({
                         "data": {
                             "student_id": student.id,

@@ -28,7 +28,8 @@ def rotate_and_crop(img):
     
     rect = cv2.minAreaRect(max_cnt)
     ((cx,cy),(cw,ch),angle) = rect
-    
+    if abs(angle-90) < 5 or abs(angle-90) > 30 :
+        return img
     M = cv2.getRotationMatrix2D((cx,cy), angle-90, 1)
     rotated = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
     
@@ -52,6 +53,10 @@ def getPlateTextFromImage(imgPath):
     image = cv2.imread(imgPath)
     results = model_detect_frame(image)
     df = results.pandas().xyxy[0]
+    xmin = 0
+    xmax = 0
+    ymin = 0
+    ymax = 0
     for obj in df.iloc:
         xmin = float(obj['xmin'])
         xmax = float(obj['xmax'])
