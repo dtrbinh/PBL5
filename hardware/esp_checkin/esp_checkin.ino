@@ -16,8 +16,10 @@
 #include <ArduinoJson.h>
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-const char* ssid = "freewifi";
-const char* password = "123512356";
+// const char* ssid = "freewifi";
+// const char* password = "123512356";
+const char* ssid = "NHANNT";
+const char* password = "0906551010";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -339,49 +341,40 @@ String postImageWithLocalHTTP(camera_fb_t* fb) {
     result = response;
     // return "22$53R4-3628";
 
-    // // Khai báo bộ đệm đối tượng JSON
-    // DynamicJsonDocument doc(1024);
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
 
-    // // Phân tích cú pháp JSON
-    // DeserializationError error = deserializeJson(doc, response);
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
 
-    // // Kiểm tra lỗi phân tích cú pháp JSON
-    // if (error) {
-    //   Serial.print("deserializeJson() failed: ");
-    //   Serial.println(error.c_str());
-    //   return "";
-    // }
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      return "";
+    }
 
-    // // Lấy giá trị các trường dữ liệu
-    // const char* class_name = doc["data"]["class_name"];
-    // const char* faculty = doc["data"]["faculty"];
-    // const char* name = doc["data"]["name"];
-    // const char* student_id = doc["data"]["student_id"];
-    // const char* message = doc["message"];
-    // int status = doc["status"];
+    // Truy xuất giá trị trong JSON
+    const char* number_plate = doc["data"]["number_plate"];
+    const char* plate_img_url = doc["data"]["plate_img"];
+    const char* message = doc["message"];
+    int status = doc["status"];
 
-    // // In giá trị các trường dữ liệu
-    // Serial.print("class_name: ");
-    // Serial.println(class_name);
-    // Serial.print("faculty: ");
-    // Serial.println(faculty);
-    // Serial.print("name: ");
-    // Serial.println(name);
-    // Serial.print("student_id: ");
-    // Serial.println(student_id);
-    // Serial.print("message: ");
-    // Serial.println(message);
-    // Serial.print("status: ");
-    // Serial.println(status);
+    // In kết quả
+    Serial.print(F("Number plate: "));
+    Serial.println(number_plate);
+    Serial.print(F("Plate image: "));
+    Serial.println(plate_img_url);
+    Serial.print(F("Message: "));
+    Serial.println(message);
+    Serial.print(F("Status: "));
+    Serial.println(status);
 
-    // String faculty_name = String(falculty).replace(" ", "");
-    // String student_name = String(name).replace(" ", "");
-
-    // if (status == 0) {
-    //   result = "";
-    // } else {
-    //   result = String(student_id) + "$" + String(student_name) + "$" + String(class_name) + "$" + String(faculty_name);
-    // }
+    if (status == 0) {
+      result = "";
+    } else {
+      result = String(plate_img_url) + "$" + String(number_plate);
+    }
   } else {
     Serial.print("Error on sending POST: ");
     Serial.println(httpResponseCode);

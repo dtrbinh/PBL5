@@ -4,6 +4,8 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include <WiFi.h>
+#include <WifiClient.h>
+#include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
@@ -11,22 +13,13 @@
 #include "stdio.h"
 #include "Wire.h"
 #include "HardwareSerial.h"
-
-//local
-// String serverName = "192.168.1.XXX";   // REPLACE WITH YOUR local PC ADDRESS
-// const int serverPort = 80;
-// String serverPath = "/upload.php";
-// WiFiClient client;
-
-//remote
-String serverName = "example.com";  // OR REPLACE WITH YOUR DOMAIN NAME
-const int serverPort = 443;         //server port for HTTPS
-String serverPath = "/upload.php";
-WiFiClientSecure client;
+#include <ArduinoJson.h>
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-const char* ssid = "freewifi";
-const char* password = "123512356";
+// const char* ssid = "freewifi";
+// const char* password = "123512356";
+const char* ssid = "NHANNT";
+const char* password = "0906551010";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -278,78 +271,118 @@ void readSpiffImage() {
 
 #pragma region APP_FUNCTION
 //Call api read student card
-String postStudentCard() {
-  String getAll;
-  String getBody;
+String readPlateNumber() {
 
-  camera_fb_t* fb = NULL;
-  fb = capturePhoto();
+  if (isTakingPicture) return "";
+  camera_fb_t* fb = NULL;  // pointer
+  Serial.println("Taking a photo...");
+  // turnOnFlash();
+  // delay(100);
+  fb = esp_camera_fb_get();
+  // delay(100);
+  // turnOffFlash();
+
   if (!fb) {
     Serial.println("Camera capture failed");
     isReady = false;
-  }
-
-  Serial.println("Connecting to server: " + serverName);
-
-  client.setInsecure();
-  if (client.connect(serverName.c_str(), serverPort)) {
-    Serial.println("Connection successful!");
-    String head = "--PBL5\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "\r\n--PBL5--\r\n";
-
-    uint32_t imageLen = fb->len;
-    uint32_t extraLen = head.length() + tail.length();
-    uint32_t totalLen = imageLen + extraLen;
-
-    client.println("POST " + serverPath + " HTTP/1.1");
-    client.println("Host: " + serverName);
-    client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data; boundary=PBL5");
-    client.println();
-    client.print(head);
-
-    uint8_t* fbBuf = fb->buf;
-    size_t fbLen = fb->len;
-    for (size_t n = 0; n < fbLen; n = n + 1024) {
-      if (n + 1024 < fbLen) {
-        client.write(fbBuf, 1024);
-        fbBuf += 1024;
-      } else if (fbLen % 1024 > 0) {
-        size_t remainder = fbLen % 1024;
-        client.write(fbBuf, remainder);
-      }
-    }
-    client.print(tail);
-
-    //set timeout 10s
-    int timoutTimer = 10000;
-    long startTimer = millis();
-    boolean state = false;
-
-    while ((startTimer + timoutTimer) > millis()) {
-      Serial.print(".");
-      delay(100);
-      while (client.available()) {
-        char c = client.read();
-        if (c == '\n') {
-          if (getAll.length() == 0) { state = true; }
-          getAll = "";
-        } else if (c != '\r') {
-          getAll += String(c);
-        }
-        if (state == true) { getBody += String(c); }
-        startTimer = millis();
-      }
-      if (getBody.length() > 0) { break; }
-    }
-    Serial.println();
-    client.stop();
-    Serial.println(getBody);
+    return "";
   } else {
-    getBody = "Connection to " + serverName + " failed.";
-    Serial.println(getBody);
+    Serial.print("Captured image. Image size: ");
+    Serial.print(fb->len);
+    Serial.println("bytes");
+
+    //implement logic
+    String response = postImageWithLocalHTTP(fb);
+    esp_camera_fb_return(fb);
+    return response;
   }
-  return getBody;
+}
+
+String postImageWithLocalHTTP(camera_fb_t* fb) {
+  const char* serverName = "192.168.1.20";
+  const int serverPort = 80;
+  const char* serverPath = "/plates/read-plate-text";
+
+  Serial.printf("Post image with size %zu\n", fb->len);
+
+  String head = "--PBL5DUT\r\nContent-Disposition: form-data; name=\"plate_img\"; filename=\"checkin-plate.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+  String tail = "\r\n--PBL5DUT--\r\n";
+
+  HTTPClient http;
+  http.begin(String("http://") + serverName + String(serverPath));
+
+  http.addHeader("Content-Type", "multipart/form-data; boundary=PBL5DUT");
+
+  uint32_t imageLen = fb->len;
+  uint32_t extraLen = head.length() + tail.length();
+  uint32_t totalLen = imageLen + extraLen;
+
+  http.addHeader("Content-Length", String(totalLen));
+
+  String body;
+  body.reserve(totalLen);
+  body += head;
+
+  uint8_t* fbBuf = fb->buf;
+  size_t fbLen = fb->len;
+
+  body += String((char*)fbBuf, fbLen);
+
+  body += tail;
+
+  esp_camera_fb_return(fb);
+  int httpResponseCode = http.POST((uint8_t*)body.c_str(), body.length());
+  // free(fbBuf);
+
+  String result;
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(response);
+    result = response;
+    // return "22$53R4-3628";
+
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
+
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
+
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      return "";
+    }
+
+    // Truy xuất giá trị trong JSON
+    const char* number_plate = doc["data"]["number_plate"];
+    const char* plate_img_url = doc["data"]["plate_img"];
+    const char* message = doc["message"];
+    int status = doc["status"];
+
+    // In kết quả
+    Serial.print(F("Number plate: "));
+    Serial.println(number_plate);
+    Serial.print(F("Plate image: "));
+    Serial.println(plate_img_url);
+    Serial.print(F("Message: "));
+    Serial.println(message);
+    Serial.print(F("Status: "));
+    Serial.println(status);
+
+    if (status == 0) {
+      result = "";
+    } else {
+      result = String(plate_img_url) + "$" + String(number_plate);
+    }
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+    result = "";
+  }
+
+  http.end();
+  return result;
 }
 
 String getNumplate() {
@@ -384,7 +417,7 @@ void thisCameraHandleMessage() {
         Serial.println("Request from center: " + msg);
 
         if (msg == "CAPTURE") {
-          String response = getNumplate();
+          String response = readPlateNumber();
           if (response != "") {
             Serial.println(response);
             thisCamera.write(response.c_str(), response.length());

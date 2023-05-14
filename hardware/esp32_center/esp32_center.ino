@@ -94,11 +94,11 @@ const char* password = "0906551010";
 //rx - tx
 HardwareSerial st_card(1);
 
-const char* checkinIP = "192.168.230.145";  // địa chỉ IP của ESP32-CAM
+const char* checkinIP = "192.168.1.21";  // địa chỉ IP của ESP32-CAM
 const int checkinPort = 88;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkin;
 
-const char* checkoutIP = "192.168.230.228";  // địa chỉ IP của ESP32-CAM
+const char* checkoutIP = "192.168.1.22";  // địa chỉ IP của ESP32-CAM
 const int checkoutPort = 90;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkout;
 
