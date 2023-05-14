@@ -149,6 +149,7 @@ def scan_student_card_service():
                 if student:
                     if 'arduino' in request.form and request.form['arduino'] == "1":
                         student.name = unidecode(student.name).replace(" ", "")
+                        student.faculty = unidecode(student.faculty).replace(" ", "")
                     return jsonify ({
                         "data": {
                             "student_id": student.id,
