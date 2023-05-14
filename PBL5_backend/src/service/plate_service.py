@@ -6,12 +6,13 @@ from flask import jsonify, request, jsonify, url_for
 
 from werkzeug.utils import secure_filename
 
+
 def read_plate_text_service():
-    if ('plate_img' in request.files):
+    if 'plate_img' in request.files:
         plate_image = request.files['plate_img']
 
         # Tạo đường dẫn ảnh tạm
-        prefix = f'SWM-{randint(10,900)}-{date.today()}'
+        prefix = f'SWM-{randint(10, 900)}-{date.today()}'
 
         # nếu có file ảnh
         if plate_image.filename != '':
