@@ -54,6 +54,3 @@ def read_plate_text_service():
                 "message": "Validation request error",
                 "status": 0
             }), 400
-    
-def hello():
-    return 'hello';

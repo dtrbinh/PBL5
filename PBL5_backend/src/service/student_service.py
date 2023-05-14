@@ -2,6 +2,7 @@ from src.extension import db
 from src.pbl5_ma import StudentSchema
 from src.model import Student
 from flask import jsonify, request
+from unidecode import unidecode
 
 student_schema = StudentSchema()
 student_schemas = StudentSchema(many=True)
@@ -128,7 +129,6 @@ def scan_student_card_service():
         student_card_image = request.files['student_card_img']
          # Đọc mã số sv từ barcode
         try:
-
             img = cv2.imdecode(np.frombuffer(student_card_image.read(), np.uint8), cv2.IMREAD_COLOR)
             barcodes = pyzbar.decode(img)
             if len(barcodes) <= 0:
@@ -145,9 +145,10 @@ def scan_student_card_service():
             else:
                 barcode_data = barcodes[0].data.decode('utf-8')
                 student_id = barcode_data
-
                 student = Student.query.get(student_id)
                 if student:
+                    if 'arduino' in request.form and request.form['arduino'] == "1":
+                        student.name = unidecode(student.name).replace(" ", "")
                     return jsonify ({
                         "data": {
                             "student_id": student.id,
@@ -170,6 +171,7 @@ def scan_student_card_service():
                         "message": "Student have not in database"
                     }), 404
         except Exception as e:
+            print(e)
             return jsonify({
                 "data": {
                         "student_id": 'undefined',
