@@ -84,8 +84,10 @@ WiFiClientSecure client;
 
 #pragma region WIFI_INFO
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-const char* ssid = "freewifi";
-const char* password = "123512356";
+// const char* ssid = "freewifi";
+// const char* password = "123512356";
+const char* ssid = "NHANNT";
+const char* password = "0906551010";
 #pragma endregion
 
 #pragma region DEFINE_STATIC_VARIABLES
@@ -687,10 +689,11 @@ void setup() {
 void loop() {
   int distance = getDistance(false);
   if (distance <= 20 && distance >= 10) {
-
     if (!isCapturedStudentCard) {
       computerLog("DISABLE CAMERA. PLEASE LEAVE SCAN ZONE AND RE SCAN TO CONTINUE CAPTURE");
       isCapturedStudentCard = true;
+      //deplay for stable
+      delay(1000);
       captureStudentCard();
     }
 
