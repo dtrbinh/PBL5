@@ -55,3 +55,5 @@ def read_plate_text_service():
                 "status": 0
             }), 400
     
+def hello():
+    return 'hello';
