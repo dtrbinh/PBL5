@@ -28,8 +28,10 @@
 
 // const char* ssid = "freewifi";
 // const char* password = "123512356";
-const char* ssid = "NHANNT";
-const char* password = "0906551010";
+
+// IP Address: http://192.168.102.205
+const char* ssid = "ChanBeDu";
+const char* password = "ChuBeDan";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -303,7 +305,7 @@ String postStudentCard() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.209.13";
+  const char* serverName = "192.168.102.13";
   const int serverPort = 80;
   const char* serverPath = "/students/scan-card";
 
