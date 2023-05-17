@@ -299,7 +299,7 @@ String readPlateNumber() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.1.20";
+  const char* serverName = "192.168.209.13";
   const int serverPort = 80;
   const char* serverPath = "/plates/read-plate-text";
 
