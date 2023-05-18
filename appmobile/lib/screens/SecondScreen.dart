@@ -1,6 +1,8 @@
-import 'package:appmobile/screens/checkin_screen.dart';
-import 'package:appmobile/screens/checkout_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'checkin_screen.dart';
+import 'checkout_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Ứng dụng hỗ trợ đỗ xe thông minh',
+          'Check-in, Check-out',
         ),
         centerTitle: true,
         backgroundColor: Colors.cyan,

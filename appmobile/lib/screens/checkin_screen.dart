@@ -46,7 +46,7 @@ class _ImageInputState extends State<CheckInScreen> {
   var isMotorbikeLoading = false;
   var isCheckIn = false;
 
-  var server = '192.168.209.214';
+  var server = '192.168.53.214';
 
   Future<void> _takeStudentCardPicture() async {
     final picker = ImagePicker();
@@ -251,6 +251,9 @@ class _ImageInputState extends State<CheckInScreen> {
       debugPrint("${responseBody}");
       var jsonBody = jsonDecode(responseBody);
       var message = "Check-in thất bại";
+      setState(() {
+        isCheckIn = false;
+      });
       Fluttertoast.showToast(
         msg: "${message}",
         toastLength: Toast.LENGTH_SHORT,

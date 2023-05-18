@@ -45,7 +45,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
   var isMotorbikeLoading = false;
   var isCheckout = false;
 
-  var server = '192.168.209.214';
+  var server = '192.168.53.214';
 
   Future<void> _takeStudentCardPicture() async {
     final picker = ImagePicker();
@@ -250,6 +250,9 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
       debugPrint("${responseBody}");
       var jsonBody = jsonDecode(responseBody);
       var message = "Check-out thất bại";
+      setState(() {
+        isCheckout = false;
+      });
       Fluttertoast.showToast(
         msg: "${message}",
         toastLength: Toast.LENGTH_SHORT,
