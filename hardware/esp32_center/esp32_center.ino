@@ -13,6 +13,8 @@
 #include "stdio.h"
 #include "pitches.h"
 #include "Wire.h"
+#include <ArduinoJson.h>
+#include "HTTPClient.h"
 
 // App state global variables
 bool isCheckInMode = true;
@@ -27,14 +29,14 @@ bool isBtnCancelPushing = false;
 unsigned long connectWifiTimer = 0;
 unsigned long getDistanceTimer = 0;
 
-String studentFaculty = "...";
-String studentClass = "...";
-String studentName = "...";
-String studentId = "...";
+String studentFaculty = "";
+String studentClass = "";
+String studentName = "";
+String studentId = "";
 
 String numplateId = "";
-String numplate = "...";
-String status = "...";
+String numplate = "";
+String status = "";
 
 #pragma region EXTENSION
 
@@ -70,7 +72,7 @@ String splitter(String data, char separator, int index) {
 
 #pragma region WIFI_INFO
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-//  IP: 192.168.102.198
+// IP: 192.168.223.198
 const char* ssid = "ChanBeDu";
 const char* password = "ChuBeDan";
 #pragma endregion
@@ -79,11 +81,11 @@ const char* password = "ChuBeDan";
 //rx - tx
 HardwareSerial st_card(1);
 
-const char* checkinIP = "192.168.209.145";  // địa chỉ IP của ESP32-CAM
+const char* checkinIP = "192.168.235.145";  // địa chỉ IP của ESP32-CAM
 const int checkinPort = 88;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkin;
 
-const char* checkoutIP = "192.168.209.228";  // địa chỉ IP của ESP32-CAM
+const char* checkoutIP = "192.168.235.228";  // địa chỉ IP của ESP32-CAM
 const int checkoutPort = 90;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkout;
 
@@ -386,6 +388,7 @@ void handleBtnOKPush() {
 }
 
 void handleBtnCancelPush() {
+  delay(300);
   int btnCancel = digitalRead(CANCEL_BTN);
   if (btnCancel == HIGH && !isBtnCancelPushing) {
     isBtnCancelPushing = true;
@@ -414,7 +417,7 @@ void cancelBtnPush() {
       step = 1;
       break;
     case 3:
-
+      // flow done
       break;
   }
 }
@@ -436,36 +439,39 @@ void okBtnPush() {
     case 2:
       // check full data and call api checkin / checkout
       if (isCheckInMode) {
-        Serial.println("CALL API TO SERVER FOR CHECKIN: ");
-        Serial.println(studentId + "-");
-        Serial.println(studentFaculty + "-");
-        Serial.println(studentClass + "-");
-        Serial.println(studentName + "-");
+        Serial.print("CALL API TO SERVER FOR CHECKIN: ");
+        Serial.print(studentId + "-");
+        Serial.print(studentFaculty + "-");
+        Serial.print(studentClass + "-");
+        Serial.print(studentName + "-");
 
-        Serial.println(numplateId + "-");
+        Serial.print(numplateId + "-");
         Serial.println(numplate + "-");
 
         //implement call api
+        sendRequestCheckin();
       } else {
-        Serial.println("CALL API TO SERVER CHECKOUT");
-        Serial.println(studentId + "-");
-        Serial.println(studentFaculty + "-");
-        Serial.println(studentClass + "-");
-        Serial.println(studentName + "-");
+        Serial.print("CALL API TO SERVER CHECKOUT");
+        Serial.print(studentId + "-");
+        Serial.print(studentFaculty + "-");
+        Serial.print(studentClass + "-");
+        Serial.print(studentName + "-");
 
-        Serial.println(numplateId + "-");
+        Serial.print(numplateId + "-");
         Serial.println(numplate + "-");
 
         //implement call api
+        status = "Waiting...";
+        lcdWriteStatus();
+        sendRequestCheckout();
       }
-      step = 3;
+
       // set status and write status to lcd
       // if success set step to 3 else step still 2
       break;
     case 3:
-      // all step is done
+      // all step is done, step back to 0
       // just clean all data + re-clean lcd
-      // step = 0
       cleanAllScreen();
       step = 0;
       break;
@@ -644,6 +650,155 @@ bool connectAndSendToCheckout(String message) {
   }
 }
 
+void sendRequestCheckin() {
+  beepSound();
+  checkInWithLocalHTTP(studentId, numplate, numplateId);
+}
+
+void sendRequestCheckout() {
+  beepSound();
+  checkOutWithLocalHTTP(studentId, numplate, numplateId);
+}
+
+bool checkInWithLocalHTTP(String student_id, String number_plate, String img_check_in_url) {
+  bool requestResult = false;
+
+  const char* serverName = "192.168.235.13";
+  String endpoint = "/check-ins";
+  const int serverPort = 80;
+  HTTPClient http;
+  http.begin(String("http://") + serverName + endpoint);
+
+  http.addHeader("Content-Type", "application/json");
+  // Khởi tạo đối tượng JSON để chứa dữ liệu
+  StaticJsonDocument<200> doc;
+  doc["student_id"] = student_id;
+  doc["number_plate"] = number_plate;
+  doc["img_check_in"] = img_check_in_url;
+  // Chuyển đổi đối tượng JSON thành chuỗi JSON
+  String data;
+  serializeJson(doc, data);
+
+  int httpResponseCode = http.POST(data);
+
+  String result;
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(response);
+    result = response;
+
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
+
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
+
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      // handle failed
+      status = "Failed";
+      lcdWriteStatus();
+      alertSound();
+      requestResult = false;
+    }
+
+    // Lấy giá trị các trường dữ liệu
+
+    // In giá trị các trường dữ liệu
+
+    // handle success
+    step = 3;
+    status = "Success";
+    lcdWriteStatus();
+    successSound();
+    requestResult = true;
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+    result = "";
+
+    // handle failed
+    status = "Failed";
+    lcdWriteStatus();
+    alertSound();
+    requestResult = false;
+  }
+  http.end();
+  return requestResult;
+}
+
+bool checkOutWithLocalHTTP(String student_id, String number_plate, String img_check_out_url) {
+  bool requestResult = false;
+
+  const char* serverName = "192.168.235.13";
+  String endpoint = "/logs";
+  const int serverPort = 80;
+  HTTPClient http;
+  http.begin(String("http://") + serverName + endpoint);
+
+  http.addHeader("Content-Type", "application/json");
+  // Khởi tạo đối tượng JSON để chứa dữ liệu
+  StaticJsonDocument<200> doc;
+  doc["student_id"] = student_id;
+  doc["number_plate"] = number_plate;
+  doc["img_check_out"] = img_check_out_url;
+  // Chuyển đổi đối tượng JSON thành chuỗi JSON
+  String data;
+  serializeJson(doc, data);
+
+  int httpResponseCode = http.POST(data);
+
+  String result;
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(response);
+    result = response;
+
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
+
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
+
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      // handle failed
+      status = "Failed";
+      lcdWriteStatus();
+      alertSound();
+      requestResult = false;
+    }
+
+    // Lấy giá trị các trường dữ liệu
+
+    // In giá trị các trường dữ liệu
+
+    // handle success
+    step = 3;
+    status = "Success";
+    lcdWriteStatus();
+    successSound();
+    requestResult = true;
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+    result = "";
+
+    // handle failed
+    status = "Failed";
+    lcdWriteStatus();
+    alertSound();
+    requestResult = false;
+  }
+  http.end();
+  return requestResult;
+}
+
+
 #pragma endregion
 
 #pragma region CLEANER
@@ -654,28 +809,29 @@ void resetSystemMode() {
 }
 
 void resetStudentCardStep() {
-  studentFaculty = "Faculty";
+  studentFaculty = "";
   studentClass = "Class";
   studentName = "Name";
-  studentId = "102200000";
+  studentId = "";
 
   lcdWriteClassAndName();
 }
 
 void resetNumberPlateStep() {
   numplateId = "";
-  numplate = "0R00 - 0000";
+  numplate = "=====";
   lcdWriteNumberPlate();
 }
 
 void cleanAllScreen() {
   isCheckInMode = true;
-  studentFaculty = "Faculty";
+  studentFaculty = "";
   studentClass = "Class";
   studentName = "Name";
-  studentId = "102200000";
+  studentId = "";
   numplateId = "";
-  numplate = "0R00 - 0000";
+  numplate = "=====";
+  status = "";
   updateScreenState();
 }
 

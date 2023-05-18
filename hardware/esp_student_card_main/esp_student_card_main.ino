@@ -26,10 +26,7 @@
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
 
-// const char* ssid = "freewifi";
-// const char* password = "123512356";
-
-// IP Address: http://192.168.102.205
+// IP Address: http://192.168.235.205
 const char* ssid = "ChanBeDu";
 const char* password = "ChuBeDan";
 
@@ -305,7 +302,7 @@ String postStudentCard() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.102.13";
+  const char* serverName = "192.168.235.13";
   const int serverPort = 80;
   const char* serverPath = "/students/scan-card";
 
