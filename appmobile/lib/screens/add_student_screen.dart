@@ -10,18 +10,19 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-class AddStudentScreen extends StatefulWidget {
-  const AddStudentScreen({super.key});
+class AddStudentScreen extends StatelessWidget {
+  final Function onStudentAdded;
 
-  @override
-  State<AddStudentScreen> createState() => _AddStudentScreenState();
-}
+  AddStudentScreen({required this.onStudentAdded});
 
-class _AddStudentScreenState extends State<AddStudentScreen> {
   var server = '192.168.53.214';
+
   TextEditingController _id = TextEditingController();
+
   TextEditingController _name = TextEditingController();
+
   TextEditingController _className = TextEditingController();
+
   TextEditingController _faculty = TextEditingController();
 
   Future<void> addStudent(
@@ -105,6 +106,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 String faculty = _faculty.text;
                 // Do something with the entered values
                 addStudent(id, name, className, faculty);
+                onStudentAdded();
                 Navigator.pop(context);
               },
               child: Text('Thêm sinh viên'),

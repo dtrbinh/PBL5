@@ -19,6 +19,28 @@ class StudentManagement extends StatefulWidget {
 }
 
 class _StudentManagementState extends State<StudentManagement> {
+  void _reloadData() {
+    // Implement the logic to reload the data here
+    // For example, you can call the API again to fetch the latest student data
+    getAllLogs();
+  }
+
+  bool isReloading = false;
+  Future<void> reloadData() async {
+    // Add your data reloading logic here
+    // For example, call your API to fetch updated data
+    getAllLogs();
+
+    // Simulating a delay of 2 seconds
+    await Future.delayed(Duration(seconds: 1));
+
+    setState(() {
+      // Update your data and set isReloading to false
+      // For example, update studentList with the new data
+      isReloading = false;
+    });
+  }
+
   var server = '192.168.53.214';
   List<Student> studentList = [];
   var isLoaded = false;
@@ -55,6 +77,20 @@ class _StudentManagementState extends State<StudentManagement> {
     }
   }
 
+  Future<void> deleteStudent(String studentId) async {
+    var url = Uri.http(server, '/students/$studentId');
+
+    var response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      // Student deleted successfully
+      debugPrint('Student deleted');
+    } else {
+      debugPrint(
+          'Failed to delete student. Status code: ${response.statusCode}');
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -70,15 +106,54 @@ class _StudentManagementState extends State<StudentManagement> {
         centerTitle: true,
         backgroundColor: Colors.cyan,
       ),
-      body: !isLoaded
-          ? const Center(
-              child:
-                  CircularProgressIndicator(), // Show CircularProgressIndicator when loading
-            )
-          : ListView.separated(
-              itemBuilder: (context, index) {
-                final studentItem = studentList[index];
-                return ListTile(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            isReloading = true;
+          });
+          await reloadData();
+        },
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification notification) {
+            if (notification is ScrollEndNotification) {
+              final metrics = notification.metrics;
+              if (metrics.atEdge && metrics.pixels != 0) {
+                setState(() {
+                  isReloading = true;
+                });
+                reloadData();
+              }
+            }
+            return false;
+          },
+          child: ListView.separated(
+            itemBuilder: (context, index) {
+              final studentItem = studentList[index];
+              return Dismissible(
+                key: Key(studentItem.studentData!.id),
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                ),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) {
+                  // Handle the delete action here
+                  deleteStudent(studentItem.studentData!.id);
+                  setState(() {
+                    studentList.removeAt(index);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Đã xoá sinh viên'),
+                    ),
+                  );
+                },
+                child: ListTile(
                   title: Text(
                     'Mã số sinh viên: ${studentItem.studentData!.id} \nHọ và tên: ${studentItem.studentData!.name}\nLớp: ${studentItem.studentData!.studentClass}\nKhoa: ${studentItem.studentData!.faculty}',
                   ),
@@ -92,19 +167,24 @@ class _StudentManagementState extends State<StudentManagement> {
                       ),
                     );
                   },
-                );
-              },
-              separatorBuilder: (context, index) => const Divider(
-                thickness: 3.0,
-              ), // Add Divider between items
-              itemCount: studentList.length,
+                ),
+              );
+            },
+            separatorBuilder: (context, index) => const Divider(
+              thickness: 3.0,
             ),
+            itemCount: studentList.length,
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddStudentScreen(),
+              builder: (context) => AddStudentScreen(
+                onStudentAdded: _reloadData,
+              ),
             ),
           );
         },
