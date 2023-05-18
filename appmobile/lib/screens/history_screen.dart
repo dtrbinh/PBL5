@@ -76,12 +76,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     'Mã số sinh viên: ${logItem.studentId} \nBiển số xe: ${logItem.numberPlate}',
                   ),
                   subtitle: Text(
-                    "Thời gian check-in: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(logItem.timeCheckIn!))}\n Thời gian checkout: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(logItem.timeCheckOut!))}",
+                    "Thời gian check-in: ${DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.parse(logItem.timeCheckIn!))}\nThời gian checkout: ${DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.parse(logItem.timeCheckOut!))}",
                   ),
                   onTap: () {},
                 );
               },
-              separatorBuilder: (context, index) => Divider(
+              separatorBuilder: (context, index) => const Divider(
                 thickness: 3.0,
               ), // Add Divider between items
               itemCount: logList.length,

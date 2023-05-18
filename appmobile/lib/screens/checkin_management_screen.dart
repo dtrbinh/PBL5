@@ -75,12 +75,12 @@ class _CheckInManagementState extends State<CheckInManagement> {
                     'Mã số sinh viên: ${checkinItem.studentId} \nBiển số xe: ${checkinItem.numberPlate}',
                   ),
                   subtitle: Text(
-                    "Thời gian check-in: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(checkinItem.timeCheckIn!))}",
+                    "Thời gian check-in: ${DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.parse(checkinItem.timeCheckIn!))}",
                   ),
                   onTap: () {},
                 );
               },
-              separatorBuilder: (context, index) => Divider(
+              separatorBuilder: (context, index) => const Divider(
                 thickness: 3.0,
               ), // Add Divider between items
               itemCount: checkinList.length,
