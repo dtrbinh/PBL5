@@ -1,8 +1,13 @@
+import csv
 from src.extension import db
 from src.pbl5_ma import StudentSchema
 from src.model import Student
 from flask import jsonify, request
 from unidecode import unidecode
+from datetime import date
+import os
+from random import randint
+from werkzeug.utils import secure_filename
 
 student_schema = StudentSchema()
 student_schemas = StudentSchema(many=True)
@@ -125,32 +130,41 @@ def delete_student_by_id_service(id):
 
 # scan student card service
 def scan_student_card_service():
-    if (('student_card_img' in request.files)):
+    if 'student_card_img' in request.files:
         student_card_image = request.files['student_card_img']
-         # Đọc mã số sv từ barcode
+        # Tạo đường dẫn ảnh tạm
+        prefix = f'SWM-{randint(10, 900)}-{date.today()}'
+        filename = secure_filename(student_card_image.filename)
+        filename = f'{prefix}-{filename}'
+        filename = 'src/static/upload/image/student-cards/' + filename
+        student_card_image.save(filename)
+        # Đọc mã số sv từ barcode
         try:
-            img = cv2.imdecode(np.frombuffer(student_card_image.read(), np.uint8), cv2.IMREAD_COLOR)
-            barcodes = pyzbar.decode(img)
+            # img = cv2.imdecode(np.frombuffer(student_card_image.read(), np.uint8), cv2.IMREAD_COLOR)
+            image = cv2.imread(filename)
+            barcodes = pyzbar.decode(image)
+            # os.remove(filename)
             if len(barcodes) <= 0:
                 return jsonify({
-                            "data": {
-                                "student_id": 'undefined',
-                                "name": 'undefined',
-                                "class_name": 'undefined',
-                                "faculty": 'undefined'
-                            },
-                            "status": 0,
-                            "message": "Can not get student id in student card",
-                        }), 400
+                    "data": {
+                        "student_id": 'undefined',
+                        "name": 'undefined',
+                        "class_name": 'undefined',
+                        "faculty": 'undefined'
+                    },
+                    "status": 0,
+                    "message": "Can not get student id in student card",
+                }), 400
             else:
                 barcode_data = barcodes[0].data.decode('utf-8')
                 student_id = barcode_data
+                print(student_id)
                 student = Student.query.get(student_id)
                 if student:
                     if 'arduino' in request.form and request.form['arduino'] == "1":
                         student.name = unidecode(student.name).replace(" ", "")
                         student.faculty = unidecode(student.faculty).replace(" ", "")
-                    return jsonify ({
+                    return jsonify({
                         "data": {
                             "student_id": student.id,
                             "name": student.name,
@@ -175,22 +189,59 @@ def scan_student_card_service():
             print(e)
             return jsonify({
                 "data": {
-                        "student_id": 'undefined',
-                        "name": 'undefined',
-                        "class_name": 'undefined',
-                        "faculty": 'undefined'
+                    "student_id": 'undefined',
+                    "name": 'undefined',
+                    "class_name": 'undefined',
+                    "faculty": 'undefined'
                 },
                 "status": 0,
                 "message": "FAILED"
             }), 400
-    else: 
+    else:
         return jsonify({
-                "data": {
-                        "student_id": 'undefined',
-                        "name": 'undefined',
-                        "class_name": 'undefined',
-                        "faculty": 'undefined'
-                },
-                "status": 0,
-                "message": "Validation request error"
-            }), 400
+            "data": {
+                "student_id": 'undefined',
+                "name": 'undefined',
+                "class_name": 'undefined',
+                "faculty": 'undefined'
+            },
+            "status": 0,
+            "message": "Validation request error"
+        }), 400
+    
+
+def import_file_students_service():
+    if 'file_students' not in request.files:
+        return jsonify({"message": "No file provided", "status": 0}), 400
+
+    file = request.files['file_students']
+
+    if file.filename == '':
+        return jsonify({"message": "No file selected", "status": 0}), 400
+
+    students = []
+    try:
+        # Đọc dữ liệu từ file CSV
+        reader = csv.DictReader(file.stream.read().decode("utf-8-sig").splitlines())
+
+        for row in reader:
+            student = Student(
+                id=row['mssv'],
+                name=row['name'],
+                class_name=row['class_name'],
+                faculty=row['faculty']
+            )
+            students.append(student)
+        
+    except csv.Error as e:
+        print(e)
+        return jsonify({"message": "Error reading CSV file", "status": 0}), 400
+
+    try:
+        db.session.bulk_save_objects(students)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error saving students to database", "status": 0}), 400
+
+    return student_schemas.jsonify(students), 201

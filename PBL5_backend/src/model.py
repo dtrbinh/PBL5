@@ -16,7 +16,7 @@ class Student(db.Model):
 
 class CheckIn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    number_plate = db.Column(db.String(20), nullable=False)
+    number_plate = db.Column(db.String(20), unique=True, nullable=False)
     student_id = db.Column(db.String(20), db.ForeignKey("student.id"), nullable = False)
     time_check_in = db.Column(db.DateTime)
     img_check_in = db.Column(db.String(255), nullable = False)

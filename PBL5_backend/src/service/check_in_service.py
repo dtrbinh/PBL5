@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlite3 import IntegrityError
 from src.extension import db
 from src.pbl5_ma import CheckInSchema
 from src.model import CheckIn
@@ -21,6 +22,21 @@ def create_check_in_service():
         student_id = data['student_id']
         img_check_in = data['img_check_in']
         try: 
+            # Check number_plate whether checked in before or not
+            existing_check_in = CheckIn.query.filter_by(number_plate=number_plate).first()
+            if existing_check_in:
+                return jsonify({
+                    "data": {
+                        "id": existing_check_in.id,
+                        "student_id": student_id,
+                        "number_plate": number_plate,
+                        "time_check_in": existing_check_in.time_check_in,
+                        "img_check_in": existing_check_in.img_check_in
+                    },
+                    "message": "The vehicle has been checked in before",
+                    "status": 0
+                }), 400
+            
             time_check_in = datetime.now()
             check_in = CheckIn(number_plate, student_id, time_check_in, img_check_in)
             db.session.add(check_in)
@@ -70,6 +86,14 @@ def find_by_student_id_and_plate_number_service(student_id, number_plate_input):
                                                     .first()
     return check_in_find
 
+# find check_in by id service
+def find_check_in_by_id_service(id):
+    check_in = CheckIn.query.get(id)
+    if check_in:
+        return check_in_schema.jsonify(check_in), 200
+    else:
+        return jsonify({"message": "Check in not found!"}), 404
+    
 # update check in by id service
 def update_check_in_by_id_service(id):
     check_in = CheckIn.query.get(id)

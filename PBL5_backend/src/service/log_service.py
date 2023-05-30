@@ -140,6 +140,6 @@ def delete_log_by_id_service(id):
 def find_log_by_id_service(id):
     log = Log.query.get(id)
     if log:
-        return log.jsonify(log)
+        return log_schema.jsonify(log), 200
     else:
         return jsonify({"message": "Log not found!"}), 404

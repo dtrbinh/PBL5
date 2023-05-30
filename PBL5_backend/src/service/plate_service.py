@@ -18,10 +18,10 @@ def read_plate_text_service():
             filename = secure_filename(plate_image.filename)
             filename = f'{prefix}-{filename}'
             plate_image.save(os.path.join(
-                'src/static/upload',
+                'src/static/upload/image/license-plates',
                 filename
             ))
-            imgPath = f'src/static/upload/{filename}'
+            imgPath = f'src/static/upload/image/license-plates/{filename}'
 
             # lấy text trên biển số xe
             number_plate = getPlateTextFromImage(imgPath)
@@ -40,7 +40,7 @@ def read_plate_text_service():
                 return jsonify({
                     "data": {
                         "number_plate": number_plate,
-                        "plate_img": url_for('static', filename='upload/' + filename, _external=True),
+                        "plate_img": url_for('static', filename='upload/image/license-plates/' + filename, _external=True),
                     },
                     "message": "SUCCESS",
                     "status": 1
