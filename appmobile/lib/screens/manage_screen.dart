@@ -22,12 +22,12 @@ class _ManagerScreenState extends State<ManagerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.cyan,
-        centerTitle: true,
         title: const Text('Quản lý nhà xe'),
+        centerTitle: true,
+        backgroundColor: Colors.cyan,
       ),
       body: Center(
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
@@ -39,10 +39,10 @@ class _ManagerScreenState extends State<ManagerScreen> {
               }),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
-                fixedSize: const Size.fromWidth(120),
+                fixedSize: const Size.fromWidth(150),
               ),
               child: const Text(
-                ' Quản lý \nsinh viên',
+                ' Quản lý sinh viên',
               ),
             ),
             const SizedBox(
@@ -58,10 +58,10 @@ class _ManagerScreenState extends State<ManagerScreen> {
               }),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
-                fixedSize: const Size.fromWidth(120),
+                fixedSize: const Size.fromWidth(150),
               ),
               child: const Text(
-                ' Quản lý \nCheck-in',
+                ' Quản lý Check-in',
               ),
             ),
             const SizedBox(

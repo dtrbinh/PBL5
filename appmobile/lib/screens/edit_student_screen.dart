@@ -2,10 +2,13 @@ import 'dart:convert';
 
 import 'package:appmobile/screens/student_management_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../models/student.dart';
 
 import 'package:http/http.dart' as http;
+
+import '../util/constants.dart';
 
 class EditStudentScreen extends StatefulWidget {
   final StudentData studentData;
@@ -21,8 +24,6 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   late TextEditingController nameController;
   late TextEditingController classController;
   late TextEditingController facultyController;
-
-  var server = '192.168.53.214';
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     final updatedName = nameController.text;
     final updatedClass = classController.text;
     final updatedFaculty = facultyController.text;
-    var url = Uri.http(server, '/students/$updatedId');
+    var url = Uri.http(Constant.server, '/students/$updatedId');
     var body = json.encode({
       'name': updatedName,
       'class_name': updatedClass,
@@ -60,11 +61,25 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     var response = await http.put(url, headers: headers, body: body);
 
     if (response.statusCode == 200) {
-      // Successful update
-      debugPrint('Student updated successfully');
+      Fluttertoast.showToast(
+        msg: "Cập nhật thành công",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey[600],
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     } else {
-      debugPrint(
-          'Failed to update student. Status code: ${response.statusCode}');
+      Fluttertoast.showToast(
+        msg: "Cập nhật thất bại",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey[600],
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 
@@ -87,6 +102,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
           children: [
             TextField(
               controller: idController,
+              enabled: false,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'ID',
@@ -96,26 +112,27 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               controller: nameController,
               keyboardType: TextInputType.text,
               decoration: const InputDecoration(
-                labelText: 'Name',
+                labelText: 'Họ tên',
               ),
             ),
             TextField(
               controller: classController,
               keyboardType: TextInputType.text,
               decoration: const InputDecoration(
-                labelText: 'Class',
+                labelText: 'Lớp',
               ),
             ),
             TextField(
               controller: facultyController,
               keyboardType: TextInputType.text,
               decoration: const InputDecoration(
-                labelText: 'Faculty',
+                labelText: 'Khoa',
               ),
             ),
             ElevatedButton(
               onPressed: (() {
                 updateStudent(context);
+                Navigator.popUntil(context, (route) => route.isCurrent);
                 Navigator.pop(context);
               }),
               style: ElevatedButton.styleFrom(

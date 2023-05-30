@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:appmobile/models/student.dart';
+import 'package:appmobile/screens/student_management_screen.dart';
+import 'package:appmobile/util/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -15,19 +17,14 @@ class AddStudentScreen extends StatelessWidget {
 
   AddStudentScreen({required this.onStudentAdded});
 
-  var server = '192.168.53.214';
-
   TextEditingController _id = TextEditingController();
-
   TextEditingController _name = TextEditingController();
-
   TextEditingController _className = TextEditingController();
-
   TextEditingController _faculty = TextEditingController();
 
   Future<void> addStudent(
       String id, String name, String className, String faculty) async {
-    var url = Uri.http(server, '/students');
+    var url = Uri.http(Constant.server, '/students');
     var headers = {'Content-Type': 'application/json'};
     var body = json.encode({
       'id': id,
@@ -65,7 +62,9 @@ class AddStudentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Screen'),
+        title: Text('Thêm sinh viên'),
+        centerTitle: true,
+        backgroundColor: Colors.cyan,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -107,8 +106,10 @@ class AddStudentScreen extends StatelessWidget {
                 // Do something with the entered values
                 addStudent(id, name, className, faculty);
                 onStudentAdded();
+                Navigator.popUntil(context, (route) => route.isCurrent);
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
               child: Text('Thêm sinh viên'),
             ),
           ],

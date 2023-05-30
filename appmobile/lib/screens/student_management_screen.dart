@@ -1,8 +1,10 @@
 import 'package:appmobile/models/student.dart';
 import 'package:appmobile/screens/add_student_screen.dart';
+import 'package:appmobile/util/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'dart:convert';
 
@@ -41,12 +43,11 @@ class _StudentManagementState extends State<StudentManagement> {
     });
   }
 
-  var server = '192.168.53.214';
   List<Student> studentList = [];
   var isLoaded = false;
 
   Future<void> getAllLogs() async {
-    var url = Uri.http(server, '/students');
+    var url = Uri.http(Constant.server, '/students');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -78,7 +79,7 @@ class _StudentManagementState extends State<StudentManagement> {
   }
 
   Future<void> deleteStudent(String studentId) async {
-    var url = Uri.http(server, '/students/$studentId');
+    var url = Uri.http(Constant.server, '/students/$studentId');
 
     var response = await http.delete(url);
 
@@ -92,9 +93,24 @@ class _StudentManagementState extends State<StudentManagement> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    Fluttertoast.showToast(
+      msg: Constant.server,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.grey[600],
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
     getAllLogs();
   }
 
@@ -134,13 +150,45 @@ class _StudentManagementState extends State<StudentManagement> {
                 background: Container(
                   color: Colors.red,
                   alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 16.0),
-                  child: Icon(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: const Icon(
                     Icons.delete,
                     color: Colors.white,
                   ),
                 ),
                 direction: DismissDirection.endToStart,
+                confirmDismiss: (direction) async {
+                  // Show confirmation dialog
+                  bool confirm = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Xác nhận xoá'),
+                        content: const Text(
+                            'Bạn có chắc chắn muốn xoá sinh viên này?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(
+                                  false); // Dismiss the dialog and return false
+                            },
+                            child: const Text('Không'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(
+                                  true); // Dismiss the dialog and return true
+                            },
+                            child: const Text('Có'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  // Return the confirmation result
+                  return confirm ?? false;
+                },
                 onDismissed: (direction) {
                   // Handle the delete action here
                   deleteStudent(studentItem.studentData!.id);
@@ -148,30 +196,42 @@ class _StudentManagementState extends State<StudentManagement> {
                     studentList.removeAt(index);
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Đã xoá sinh viên'),
                     ),
                   );
                 },
-                child: ListTile(
-                  title: Text(
-                    'Mã số sinh viên: ${studentItem.studentData!.id} \nHọ và tên: ${studentItem.studentData!.name}\nLớp: ${studentItem.studentData!.studentClass}\nKhoa: ${studentItem.studentData!.faculty}',
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditStudentScreen(
-                          studentData: studentItem.studentData!,
-                        ),
+                child: Padding(
+                  padding: EdgeInsets.only(left: 16, right: 16, top: 10),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          10), // Điều chỉnh độ cong của góc bo tròn
+                      side: BorderSide(
+                          color: Colors.blueGrey,
+                          width: 2), // Màu và độ dày của border
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        'Mã số sinh viên: ${studentItem.studentData!.id} \nHọ và tên: ${studentItem.studentData!.name}\nLớp: ${studentItem.studentData!.studentClass}\nKhoa: ${studentItem.studentData!.faculty}',
                       ),
-                    );
-                  },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditStudentScreen(
+                              studentData: studentItem.studentData!,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               );
             },
             separatorBuilder: (context, index) => const Divider(
-              thickness: 3.0,
+              thickness: 2.0,
             ),
             itemCount: studentList.length,
           ),

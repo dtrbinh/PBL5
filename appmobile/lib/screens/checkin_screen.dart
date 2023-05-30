@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:appmobile/util/constants.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:image/image.dart' as img;
 
@@ -45,8 +46,7 @@ class _ImageInputState extends State<CheckInScreen> {
   var isCardLoading = false;
   var isMotorbikeLoading = false;
   var isCheckIn = false;
-
-  var server = '192.168.53.214';
+  var isCheckInPressed = false;
 
   Future<void> _takeStudentCardPicture() async {
     final picker = ImagePicker();
@@ -71,7 +71,7 @@ class _ImageInputState extends State<CheckInScreen> {
   }
 
   Future<void> uploadCardImage(File imageFile) async {
-    var url = Uri.http(server, '/students/scan-card');
+    var url = Uri.http(Constant.server, '/students/scan-card');
     var request = http.MultipartRequest('POST', url);
 
     var multipartFile =
@@ -158,7 +158,7 @@ class _ImageInputState extends State<CheckInScreen> {
   }
 
   Future<void> uploadMotorbikeImage(File imageFile) async {
-    var url = Uri.http(server, '/plates/read-plate-text');
+    var url = Uri.http(Constant.server, '/plates/read-plate-text');
     var request = http.MultipartRequest('POST', url);
 
     var multipartFile =
@@ -197,7 +197,7 @@ class _ImageInputState extends State<CheckInScreen> {
 
   Future<void> checkIn(
       String plateNumber, String studentId, String imageFile) async {
-    var url = Uri.http(server, '/check-ins');
+    var url = Uri.http(Constant.server, '/check-ins');
 
     var headers = {'Content-Type': 'application/json'};
     var body = jsonEncode({
@@ -231,8 +231,6 @@ class _ImageInputState extends State<CheckInScreen> {
       var checkInData = jsonBody['data'];
       // var message = jsonBody['message'];
       var message = "Check-in thành công";
-      print('Check-in success: $message');
-      print('Check-in data: $checkInData');
       Fluttertoast.showToast(
         msg: "${message}",
         toastLength: Toast.LENGTH_SHORT,
@@ -263,7 +261,6 @@ class _ImageInputState extends State<CheckInScreen> {
         textColor: Colors.white,
         fontSize: 16.0,
       );
-      print('Check-in failed with status: ${response.statusCode}');
     }
   }
 
@@ -394,28 +391,41 @@ class _ImageInputState extends State<CheckInScreen> {
                 ),
                 child: const Text('Chụp biển số xe'),
               ),
-              ElevatedButton(
-                onPressed: (() => checkIn(
+              Visibility(
+                visible:
+                    cardImageCheckin != null && motorbikeImageCheckin != null,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Xử lý khi nút "Check-in" được nhấn
+                    checkIn(
                       motorbike.numberPlate!,
                       student.studentData!.id,
                       motorbike.plateImage!,
-                    )),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  fixedSize: const Size.fromWidth(120),
-                  padding: const EdgeInsets.all(10),
+                    );
+                    setState(() {
+                      isCheckInPressed = true;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    fixedSize: const Size.fromWidth(120),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: const Text('Check-in'),
                 ),
-                child: const Text('Check-in'),
               ),
-              !isCheckIn
-                  ? const Text(
-                      "Check-in thất bại",
-                      style: TextStyle(color: Colors.red, fontSize: 18),
-                    )
-                  : const Text(
-                      "Check-in thành công",
-                      style: TextStyle(color: Colors.green, fontSize: 18),
-                    )
+              Visibility(
+                visible: isCheckInPressed,
+                child: isCheckIn
+                    ? const Text(
+                        "Check-in thành công",
+                        style: TextStyle(color: Colors.green, fontSize: 18),
+                      )
+                    : const Text(
+                        "Check-in thất bại",
+                        style: TextStyle(color: Colors.red, fontSize: 18),
+                      ),
+              ),
             ],
           ),
         ),

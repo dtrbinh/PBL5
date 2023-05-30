@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:appmobile/util/constants.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 
@@ -44,8 +45,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
   var isCardLoading = false;
   var isMotorbikeLoading = false;
   var isCheckout = false;
-
-  var server = '192.168.53.214';
+  var isCheckoutPressed = false;
 
   Future<void> _takeStudentCardPicture() async {
     final picker = ImagePicker();
@@ -70,7 +70,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
   }
 
   Future<void> uploadCardImage(File imageFile) async {
-    var url = Uri.http(server, '/students/scan-card');
+    var url = Uri.http(Constant.server, '/students/scan-card');
     var request = http.MultipartRequest('POST', url);
 
     var multipartFile =
@@ -157,7 +157,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
   }
 
   Future<void> uploadMotorbikeImage(File imageFile) async {
-    var url = Uri.http(server, '/plates/read-plate-text');
+    var url = Uri.http(Constant.server, '/plates/read-plate-text');
     var request = http.MultipartRequest('POST', url);
 
     var multipartFile =
@@ -196,7 +196,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
 
   Future<void> checkOut(
       String plateNumber, String studentId, String imageFile) async {
-    var url = Uri.http(server, '/logs');
+    var url = Uri.http(Constant.server, '/logs');
 
     var headers = {'Content-Type': 'application/json'};
     var body = jsonEncode({
@@ -393,28 +393,40 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
                 ),
                 child: const Text('Chụp biển số xe'),
               ),
-              ElevatedButton(
-                onPressed: (() => checkOut(
+              Visibility(
+                visible:
+                    cardImageCheckout != null && motorbikeImageCheckout != null,
+                child: ElevatedButton(
+                  onPressed: (() {
+                    checkOut(
                       motorbike.numberPlate!,
                       student.studentData!.id,
                       motorbike.plateImage!,
-                    )),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  fixedSize: const Size.fromWidth(120),
-                  padding: const EdgeInsets.all(10),
+                    );
+                    setState(() {
+                      isCheckoutPressed = true;
+                    });
+                  }),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    fixedSize: const Size.fromWidth(120),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: const Text('Check-out'),
                 ),
-                child: const Text('Check-out'),
               ),
-              !isCheckout
-                  ? const Text(
-                      "Check-out thất bại",
-                      style: TextStyle(color: Colors.red, fontSize: 18),
-                    )
-                  : const Text(
-                      "Check-out thành công",
-                      style: TextStyle(color: Colors.green, fontSize: 18),
-                    )
+              Visibility(
+                visible: isCheckoutPressed,
+                child: isCheckout
+                    ? const Text(
+                        "Check-out thành công",
+                        style: TextStyle(color: Colors.green, fontSize: 18),
+                      )
+                    : const Text(
+                        "Check-out thất bại",
+                        style: TextStyle(color: Colors.red, fontSize: 18),
+                      ),
+              ),
             ],
           ),
         ),
