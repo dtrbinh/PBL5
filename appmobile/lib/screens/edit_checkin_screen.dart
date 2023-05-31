@@ -20,6 +20,7 @@ class EditCheckinScreen extends StatefulWidget {
 }
 
 class _CheckInDetailScreenState extends State<EditCheckinScreen> {
+  late TextEditingController idController;
   late TextEditingController numberPlateController;
   late TextEditingController studentIdController;
   late TextEditingController timeCheckInController;
@@ -27,6 +28,7 @@ class _CheckInDetailScreenState extends State<EditCheckinScreen> {
   @override
   void initState() {
     super.initState();
+    idController = TextEditingController(text: widget.checkIn.id);
     numberPlateController =
         TextEditingController(text: widget.checkIn.numberPlate);
     studentIdController = TextEditingController(text: widget.checkIn.studentId);
@@ -42,118 +44,135 @@ class _CheckInDetailScreenState extends State<EditCheckinScreen> {
     super.dispose();
   }
 
-  Future<void> updateCheckIn(String numberPlate, String studentId) async {
-    var url = Uri.http(Constant.server, '/check-ins');
+  Future<void> updateCheckIn(CheckIn checkIn) async {
+    final id = idController.text.toString();
+    final updatedNumberPlate = numberPlateController.text.toString();
+    final updatedStudentId = studentIdController.text.toString();
+    var url = Uri.http(Constant.server, '/check-ins/$id');
 
     // Tạo body request từ thông tin cần cập nhật
-    final body = {
-      'number_plate': numberPlate,
-      'student_id': studentId,
-    };
+    final body = json.encode({
+      'img_check_in': checkIn.imageCheckIn,
+      'number_plate': updatedNumberPlate,
+      'student_id': updatedStudentId,
+    });
+    var headers = {'Content-Type': 'application/json'};
 
-    try {
-      // Gửi request PUT
-      final response = await http.put(
-        url,
-        body: json.encode(body),
-        headers: {'Content-Type': 'application/json'},
+    var response = await http.put(
+      url,
+      headers: headers,
+      body: body,
+    );
+
+    debugPrint("updatedNumberplate: $updatedNumberPlate");
+
+    if (response.statusCode == 200) {
+      // Cập nhật thành công
+      print('Check-in đã được cập nhật thành công');
+      Fluttertoast.showToast(
+        msg: "Cập nhật check-in thành công",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey[600],
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
-
-      if (response.statusCode == 200) {
-        // Cập nhật thành công
-        print('Check-in đã được cập nhật thành công');
-        Fluttertoast.showToast(
-          msg: "Cập nhật check-in thành công",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.grey[600],
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      } else {
-        // Cập nhật thất bại
-        print('Cập nhật check-in thất bại. Mã lỗi: ${response.statusCode}');
-        Fluttertoast.showToast(
-          msg: "Cập nhật check-in thất bại",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.grey[600],
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      }
-    } catch (e) {
-      // Xảy ra lỗi trong quá trình gửi request
-      print('Lỗi khi gửi request: $e');
+    } else {
+      // Cập nhật thất bại
+      print('Cập nhật check-in thất bại. Mã lỗi: ${response.statusCode}');
+      var responseBody = response.body;
+      debugPrint("${responseBody}");
+      var jsonBody = jsonDecode(responseBody);
+      var message = jsonBody['message'];
+      debugPrint("message: $message");
+      Fluttertoast.showToast(
+        msg: "Cập nhật check-in thất bại",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey[600],
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final updatedNumberPlate = numberPlateController.text.toString();
-    final updatedStudentId = studentIdController.text.toString();
-    final updatedTimeCheckIn = timeCheckInController.text.toString();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chi tiết Check-in'),
         centerTitle: true,
         backgroundColor: Colors.cyan,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: numberPlateController,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                labelText: 'Biển số xe',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                enabled: false,
+                controller: idController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'ID',
+                ),
               ),
-            ),
-            TextField(
-              controller: studentIdController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'MSSV',
+              TextField(
+                controller: numberPlateController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Biển số xe',
+                ),
               ),
-            ),
-            TextField(
-              controller: timeCheckInController,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                labelText: 'Thời gian check-in',
+              TextField(
+                controller: studentIdController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'MSSV',
+                ),
               ),
-            ),
-            // ElevatedButton(
-            //   onPressed: (() {
-            //     updateCheckIn(updatedNumberPlate, updatedStudentId);
-            //     Navigator.popUntil(context, (route) => route.isCurrent);
-            //     Navigator.pop(context);
-            //   }),
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: Colors.teal,
-            //     fixedSize: const Size.fromWidth(120),
-            //   ),
-            //   child: const Text('Cập nhật'),
-            // ),
-            const SizedBox(
-              height: 20,
-            ),
-            Image.network(
-              widget.checkIn.imageCheckIn!,
-              height: 400, // Adjust the height to your desired size
-              fit: BoxFit.cover, // Adjust the image fit as needed
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(
-              "Ảnh check-in",
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
+              TextField(
+                enabled: false,
+                controller: timeCheckInController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Thời gian check-in',
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                onPressed: (() {
+                  updateCheckIn(widget.checkIn);
+                  Navigator.popUntil(context, (route) => route.isCurrent);
+                  Navigator.pop(context);
+                }),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  fixedSize: const Size.fromWidth(120),
+                ),
+                child: const Text('Cập nhật'),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Image.network(
+                widget.checkIn.imageCheckIn!,
+                height: 400, // Adjust the height to your desired size
+                fit: BoxFit.cover, // Adjust the image fit as needed
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text(
+                "Ảnh check-in",
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
         ),
       ),
     );

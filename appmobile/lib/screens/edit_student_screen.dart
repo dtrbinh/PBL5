@@ -44,7 +44,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     super.dispose();
   }
 
-  Future<void> updateStudent(BuildContext context) async {
+  Future<void> updateStudent() async {
     final updatedId = idController.text;
     final updatedName = nameController.text;
     final updatedClass = classController.text;
@@ -85,11 +85,6 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final updatedId = idController.text;
-    final updatedName = nameController.text;
-    final updatedClass = classController.text;
-    final updatedFaculty = facultyController.text;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cập nhật thông tin sinh viên'),
@@ -129,9 +124,12 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 labelText: 'Khoa',
               ),
             ),
+            const SizedBox(
+              height: 10,
+            ),
             ElevatedButton(
               onPressed: (() {
-                updateStudent(context);
+                updateStudent();
                 Navigator.popUntil(context, (route) => route.isCurrent);
                 Navigator.pop(context);
               }),

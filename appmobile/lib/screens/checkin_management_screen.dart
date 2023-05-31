@@ -183,7 +183,7 @@ class _CheckInManagementState extends State<CheckInManagement> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                           10), // Điều chỉnh độ cong của góc bo tròn
-                      side: BorderSide(
+                      side: const BorderSide(
                           color: Colors.blueGrey,
                           width: 2), // Màu và độ dày của border
                     ),
