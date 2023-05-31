@@ -73,9 +73,16 @@
     1. Thành công:
     
         ![image](https://github.com/dtrbinh/PBL5/assets/93651748/da9dc03b-90da-4fd0-9a6f-62b408ad23e7)
+7. **API xem chi tiết 1 học sinh**:
+    - **Endpoint**: /students/(id)
+    - **Ví dụ**: /students/102200024
+    - **Method**: GET
+8. **API thêm sinh viên bằng file csv**:
+    - **Endpoint**: /students/import-file
+    - **Body Form data**: file_students (chú ý là file csv)
+    - **Method**: POST
 
-
-7. **API đọc biển số xe**: 
+8. **API đọc biển số xe**: 
     - **Endpoint**: /plates/read-plate-text
     - **Method**: POST
     - **Form_data**: plate_img
@@ -83,13 +90,13 @@
 
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/e34355b0-7a39-4b05-a840-01d3a37a1168)
 
-8. **API lấy tất cả check-in**: 
+9. **API lấy tất cả check-in**: 
     - **Endpoint**: /check-ins
     - **Method**: GET
     
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/d34ecf3b-d5da-410e-9265-d88377b5424a)
 
-9. **API tạo mới 1 check-in**: 
+10. **API tạo mới 1 check-in**: 
     - **Endpoint**: /check-ins
     - **Method**: POST
     - **Body**: number_plate, student_id, img_check_in
@@ -101,8 +108,9 @@
     2. Thành công:
         
         ![image](https://github.com/dtrbinh/PBL5/assets/93651748/c6687a9f-c524-4ee0-acef-8f8969a1e2a5)
+    3. Trường hợp xe đã được check in trước đó: trả về status 400
 
-10. **API cập nhật 1 check-in**: 
+11. **API cập nhật 1 check-in**: 
     - **Endpoint**: /check-ins
     - **Method**: PUT
     - **Body**: number_plate, student_id, img_check_in
@@ -115,20 +123,26 @@
         
         ![image](https://github.com/dtrbinh/PBL5/assets/93651748/3456cada-87ab-4bdd-b906-b865cc4845e8)
 
-11. **API xóa 1 check-in**: 
+12. **API xóa 1 check-in**: 
     - **Endpoint**: /check-ins/(id)
     - **Ví dụ**: /check-ins/1
     - **Method**: DELETE
 
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/7744ec41-0818-402b-9030-8122b9eb06b3)
 
-12. **API lấy tất cả log**: 
+
+13. **API xem chi tiết 1 check-in**: 
+    - **Endpoint**: /check-ins/(id)
+    - **Ví dụ**: /check-ins/1
+    - **Method**: GET
+
+14. **API lấy tất cả log**: 
     - **Endpoint**: /logs
     - **Method**: GET
 
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/3134f79f-31b2-424e-80a6-c80f6d634fec)
     
-13. **API tạo mới log (dùng khi checkout)**: 
+15. **API tạo mới log (dùng khi checkout)**: 
     - **Endpoint**: /logs
     - **Method**: POST
 
@@ -151,7 +165,7 @@
         ![image](https://github.com/dtrbinh/PBL5/assets/93651748/58a150f2-6b1b-4682-9e08-66e6e679797b)
 
 
-14. **API cập nhật 1 log**: 
+16. **API cập nhật 1 log**: 
     - **Endpoint**: /logs/(id)
     - **Ví dụ**: /logs/1
     - **Method**: PUT
@@ -161,9 +175,15 @@
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/45fa8ebe-6a3b-4db4-a6c8-c8ca9d773a18)
 
 
-15. **API xóa 1 log**: 
+17. **API xóa 1 log**: 
     - **Endpoint**: /logs/(id)
     - **Ví dụ**: /logs/1
     - **Method**: DELETE
     
     ![image](https://github.com/dtrbinh/PBL5/assets/93651748/8d0ff48a-05c3-4c18-b689-81e583d27396)
+
+
+18. **API chi tiết 1 log**: 
+    - **Endpoint**: /logs/(id)
+    - **Ví dụ**: /logs/1
+    - **Method**: GET
