@@ -1,30 +1,19 @@
-from datetime import date
 import os
-from random import randint
 from ..util.model import getPlateTextFromImage
 from flask import jsonify, request, jsonify, url_for
-
-from werkzeug.utils import secure_filename
+from ..util.upload.uploadImageUtil import uploadImage
 
 def read_plate_text_service():
-    if ('plate_img' in request.files):
+    if 'plate_img' in request.files:
         plate_image = request.files['plate_img']
-
-        # Tạo đường dẫn ảnh tạm
-        prefix = f'SWM-{randint(10,900)}-{date.today()}'
 
         # nếu có file ảnh
         if plate_image.filename != '':
-            filename = secure_filename(plate_image.filename)
-            filename = f'{prefix}-{filename}'
-            plate_image.save(os.path.join(
-                'src/static/upload/image/license-plates',
-                filename
-            ))
-            imgPath = f'src/static/upload/image/license-plates/{filename}'
-
+            # Get img path
+            img_path = uploadImage(plate_image, 'license-plates')
+            filename = os.path.basename(img_path)
             # lấy text trên biển số xe
-            number_plate = getPlateTextFromImage(imgPath)
+            number_plate = getPlateTextFromImage(img_path)
 
             # nếu có plate_number
             if number_plate is None:

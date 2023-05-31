@@ -52,8 +52,8 @@ def create_check_in_service():
                     "message": "SUCCESS",
                     "status": 1
                 }), 201
-        except Exception:
-            db.rollback()
+        except Exception as e:
+            print(e)
             return jsonify({
                     "data": {
                         "id": "undefined",
@@ -106,7 +106,8 @@ def update_check_in_by_id_service(id):
                 check_in.img_check_in=request.json['img_check_in']
                 db.session.commit()
                 return check_in_schema.jsonify(check_in), 200
-            except Exception:
+            except Exception as e:
+                print(e)
                 db.session.rollback()
                 return jsonify({"message": "Can not update check in!"}), 400
         else:
@@ -124,8 +125,8 @@ def delete_check_in_by_id_service(id):
             db.session.delete(check_in)
             db.session.commit()
             return check_in_schema.jsonify(check_in), 200
-        except Exception:
-            db.session.rollback()
+        except Exception as e:
+            print(e)
             return jsonify({"message": "Can not delete check in!"}), 400
     else:
         return jsonify({"message": "Check in not found!"}), 404
