@@ -13,6 +13,8 @@
 #include "stdio.h"
 #include "pitches.h"
 #include "Wire.h"
+#include <ArduinoJson.h>
+#include "HTTPClient.h"
 
 // App state global variables
 bool isCheckInMode = true;
@@ -27,14 +29,14 @@ bool isBtnCancelPushing = false;
 unsigned long connectWifiTimer = 0;
 unsigned long getDistanceTimer = 0;
 
-String studentFaculty = "Faculty";
-String studentClass = "Class";
-String studentName = "Name";
-String studentId = "102200000";
+String studentFaculty = "";
+String studentClass = "";
+String studentName = "";
+String studentId = "";
 
 String numplateId = "";
-String numplate = "0R00 - 0000";
-String status = "Status";
+String numplate = "";
+String status = "";
 
 #pragma region EXTENSION
 
@@ -68,37 +70,22 @@ String splitter(String data, char separator, int index) {
 
 #pragma endregion
 
-#pragma region SERVER_INFO
-//local
-// String serverName = "192.168.1.XXX";   // REPLACE WITH YOUR local PC ADDRESS
-// const int serverPort = 80;
-// String serverPath = "/upload.php";
-// WiFiClient client;
-
-//remote
-String serverName = "example.com";  // OR REPLACE WITH YOUR DOMAIN NAME
-const int serverPort = 443;         //server port for HTTPS
-String serverPath = "/upload.php";
-WiFiClientSecure client;
-#pragma endregion
-
 #pragma region WIFI_INFO
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-// const char* ssid = "freewifi";
-// const char* password = "123512356";
-const char* ssid = "NHANNT";
-const char* password = "0906551010";
+// IP: 192.168.223.198
+const char* ssid = "ChanBeDu";
+const char* password = "ChuBeDan";
 #pragma endregion
 
 #pragma region DEFINE_STATIC_VARIABLES
 //rx - tx
 HardwareSerial st_card(1);
 
-const char* checkinIP = "192.168.1.21";  // địa chỉ IP của ESP32-CAM
+const char* checkinIP = "192.168.235.145";  // địa chỉ IP của ESP32-CAM
 const int checkinPort = 88;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkin;
 
-const char* checkoutIP = "192.168.1.22";  // địa chỉ IP của ESP32-CAM
+const char* checkoutIP = "192.168.235.228";  // địa chỉ IP của ESP32-CAM
 const int checkoutPort = 90;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkout;
 
@@ -145,14 +132,22 @@ int alertMelodyDurations[] = {
   4, 4, 4
 };
 
+int successMelody[] = {
+  NOTE_G5, NOTE_B5, NOTE_D6, NOTE_G6
+};
+
+int successMelodyDurations[] = {
+  4, 4, 4, 2
+};
+
 #pragma endregion
 
 #pragma region SYSTEM_CONFIG
 //Config region
 void configHardwareSerial() {
-  computerLog("CONFIG HARDWARE SERIAL...");
+  Serial.println("CONFIG HARDWARE SERIAL...");
   st_card.begin(115200, SERIAL_8N1, 17, 18);  // studentCard
-  computerLog("OK!");
+  Serial.println("OK!");
 }
 
 void configStatusLed() {
@@ -160,18 +155,18 @@ void configStatusLed() {
   pinMode(YELLOW_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
-  computerLog("TEST LED...");
+  Serial.println("TEST LED...");
   turnOnAllLed();
   delay(1000);
   turnOffAllLed();
-  computerLog("OK!");
+  Serial.println("OK!");
 }
 
 void configBuzzer() {
   pinMode(BUZZER, OUTPUT);
-  computerLog("TEST BUZZER...");
+  Serial.println("TEST BUZZER...");
   playMelody(startMelody, startMelodyNoteDurations, ARRAY_SIZE(startMelodyNoteDurations));
-  computerLog("OK!");
+  Serial.println("OK!");
 }
 
 void configLCD() {
@@ -191,20 +186,20 @@ void configLCD() {
 }
 
 void configButton() {
-  computerLog("CONFIG BUTTON...");
+  Serial.println("CONFIG BUTTON...");
   pinMode(MODE_BTN, INPUT);
   pinMode(OK_BTN, INPUT);
   pinMode(CANCEL_BTN, INPUT);
-  computerLog("OK!");
+  Serial.println("OK!");
 }
 
 void configUltrasonicSensor() {
-  computerLog("TEST ULTRASONIC SENSOR...");
+  Serial.println("TEST ULTRASONIC SENSOR...");
   pinMode(TRIGGER, OUTPUT);
   pinMode(ECHO, INPUT);
   getDistanceTimer = millis();
   int distance = getDistance(true);
-  computerLog(String(distance));
+  Serial.println(String(distance));
 }
 
 void connectWifi() {
@@ -274,6 +269,24 @@ void playMelody(int melody[], int melodyDurations[], int melodySize) {
   }
 }
 
+void beepSound() {
+  turnOnYellowLed();
+  playMelody(beepMelody, beepMelodyDurations, ARRAY_SIZE(beepMelodyDurations));
+  turnOffYellowLed();
+}
+
+void alertSound() {
+  turnOnRedLed();
+  playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+  turnOffRedLed();
+}
+
+void successSound() {
+  turnOnGreenLed();
+  playMelody(successMelody, successMelodyDurations, ARRAY_SIZE(successMelodyDurations));
+  turnOffGreenLed();
+}
+
 #pragma endregion
 
 #pragma region ULTRASONIC_FUNCTIONS
@@ -295,7 +308,7 @@ int getDistance(bool isForceGet) {
 
   // Serial.print("Time: ");
   // Serial.println(millis());
-  computerLog(String(distance));
+  Serial.print(String(distance));
   return distance;
 }
 #pragma endregion
@@ -375,6 +388,7 @@ void handleBtnOKPush() {
 }
 
 void handleBtnCancelPush() {
+  delay(300);
   int btnCancel = digitalRead(CANCEL_BTN);
   if (btnCancel == HIGH && !isBtnCancelPushing) {
     isBtnCancelPushing = true;
@@ -403,7 +417,7 @@ void cancelBtnPush() {
       step = 1;
       break;
     case 3:
-
+      // flow done
       break;
   }
 }
@@ -411,50 +425,53 @@ void cancelBtnPush() {
 void okBtnPush() {
   switch (step) {
     case 0:
-      playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+      alertSound();
       break;
     case 1:
       if (isCheckInMode) {
-        computerLog("SEND MESSAGE CHECKIN");
+        Serial.println("SEND MESSAGE CHECKIN");
         captureCheckin();
       } else {
-        computerLog("SEND MESSAGE CHECKOUT");
+        Serial.println("SEND MESSAGE CHECKOUT");
         captureCheckout();
       }
       break;
     case 2:
       // check full data and call api checkin / checkout
       if (isCheckInMode) {
-        computerLog("CALL API TO SERVER FOR CHECKIN: ");
-        computerLog(studentId + "-");
-        computerLog(studentFaculty + "-");
-        computerLog(studentClass + "-");
-        computerLog(studentName + "-");
+        Serial.print("CALL API TO SERVER FOR CHECKIN: ");
+        Serial.print(studentId + "-");
+        Serial.print(studentFaculty + "-");
+        Serial.print(studentClass + "-");
+        Serial.print(studentName + "-");
 
-        computerLog(numplateId + "-");
-        computerLog(numplate + "-");
+        Serial.print(numplateId + "-");
+        Serial.println(numplate + "-");
 
         //implement call api
+        sendRequestCheckin();
       } else {
-        computerLog("CALL API TO SERVER CHECKOUT");
-        computerLog(studentId + "-");
-        computerLog(studentFaculty + "-");
-        computerLog(studentClass + "-");
-        computerLog(studentName + "-");
+        Serial.print("CALL API TO SERVER CHECKOUT");
+        Serial.print(studentId + "-");
+        Serial.print(studentFaculty + "-");
+        Serial.print(studentClass + "-");
+        Serial.print(studentName + "-");
 
-        computerLog(numplateId + "-");
-        computerLog(numplate + "-");
+        Serial.print(numplateId + "-");
+        Serial.println(numplate + "-");
 
         //implement call api
+        status = "Waiting...";
+        lcdWriteStatus();
+        sendRequestCheckout();
       }
-      step = 3;
+
       // set status and write status to lcd
       // if success set step to 3 else step still 2
       break;
     case 3:
-      // all step is done
+      // all step is done, step back to 0
       // just clean all data + re-clean lcd
-      // step = 0
       cleanAllScreen();
       step = 0;
       break;
@@ -470,13 +487,13 @@ void captureStudentCard() {
   int threshold = 10000;  //10.000ms = 10s
   Serial.println("CAPTURING STUDENT CARD");
   st_card.println("CAPTURE");
-  playMelody(beepMelody, beepMelodyDurations, ARRAY_SIZE(beepMelodyDurations));
+  beepSound();
   Serial.println("Waiting student card module response...");
   while (!st_card.available()) {
     Serial.print(".");
     if (millis() - timeoutChecker >= threshold) {
       Serial.println("RESPONSE TIMEOUT !!!");
-      playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+      alertSound();
       return;
     }
   }
@@ -484,26 +501,26 @@ void captureStudentCard() {
 }
 
 void captureCheckin() {
+  beepSound();
   Serial.println("CAPTURING VEHICLE CHECKIN");
   bool connectState = connectAndSendToCheckin("CAPTURE");
   if (!connectState) {
     Serial.print("CANT CONNECT TO CHECKIN CAMERA!!!");
-    playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+    alertSound();
     return;
   } else {
-    playMelody(beepMelody, beepMelodyDurations, ARRAY_SIZE(beepMelodyDurations));
   }
 }
 
 void captureCheckout() {
+  beepSound();
   Serial.println("CAPTURING VEHICLE CHECKOUT");
   bool connectState = connectAndSendToCheckout("CAPTURE");
   if (!connectState) {
     Serial.print("CANT CONNECT TO CHECKOUT CAMERA!!!");
-    playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+    alertSound();
     return;
   } else {
-    playMelody(beepMelody, beepMelodyDurations, ARRAY_SIZE(beepMelodyDurations));
   }
 }
 
@@ -511,21 +528,22 @@ void handleStCardResponse() {
   if (st_card.available()) {
     String msg = st_card.readString();
     msg.trim();
-    computerLog("RECEIVED FROM STUDENT CARD CAMERA: ");
-    computerLog(msg);
+    Serial.println("RECEIVED FROM STUDENT CARD CAMERA: ");
+    Serial.println(msg);
 
     //Example: 102200010$DoTranBinh$20T1$KhoaCNTT
 
     if (msg == "CANT_DETECT") {
-      computerLog("CAPTURE STUDENT CARD ERROR!!!");
+      Serial.println("CAPTURE STUDENT CARD ERROR!!!");
+      alertSound();
     } else {
       studentId = splitter(msg, '$', 0);
       studentName = splitter(msg, '$', 1);
       studentClass = splitter(msg, '$', 2);
       studentFaculty = splitter(msg, '$', 3);
-
       step = 1;
       lcdWriteClassAndName();
+      successSound();
     }
   }
 }
@@ -540,7 +558,7 @@ void handleCheckInResponse() {
     if (millis() - timeoutChecker >= threshold) {
       Serial.println("RESPONSE TIMEOUT !!!");
       Serial.println("CLOSE CONNECT TO CHECKIN");
-      playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+      alertSound();
       return;
     }
   }
@@ -553,11 +571,13 @@ void handleCheckInResponse() {
     numplateId = splitter(msg, '$', 0);
     numplate = splitter(msg, '$', 1);
     if (numplateId == "-1" || numplate == "undefined") {
-      computerLog("CAPTURE CHECKIN ERROR!!!");
+      Serial.println("CAPTURE CHECKIN ERROR!!!");
       resetNumberPlateStep();
+      alertSound();
     } else {
       step = 2;
       lcdWriteNumberPlate();
+      successSound();
     }
   }
 }
@@ -572,7 +592,7 @@ void handleCheckOutResponse() {
     if (millis() - timeoutChecker >= threshold) {
       Serial.println("RESPONSE TIMEOUT !!!");
       Serial.println("CLOSE CONNECT TO CHECKOUT");
-      playMelody(alertMelody, alertMelodyDurations, ARRAY_SIZE(alertMelodyDurations));
+      alertSound();
       return;
     }
   }
@@ -585,11 +605,13 @@ void handleCheckOutResponse() {
     numplateId = splitter(msg, '$', 0);
     numplate = splitter(msg, '$', 1);
     if (numplateId == "-1" || numplate == "undefined") {
-      computerLog("CAPTURE CHECKOUT ERROR!!!");
+      Serial.println("CAPTURE CHECKOUT ERROR!!!");
       resetNumberPlateStep();
+      alertSound();
     } else {
       step = 2;
       lcdWriteNumberPlate();
+      successSound();
     }
   }
 }
@@ -597,10 +619,6 @@ void handleCheckOutResponse() {
 #pragma endregion
 
 #pragma region MESSSENGER
-
-void computerLog(String message) {
-  Serial.println(message);
-}
 
 bool connectAndSendToCheckin(String message) {
   if (checkin.connect(checkinIP, checkinPort)) {
@@ -612,7 +630,7 @@ bool connectAndSendToCheckin(String message) {
     checkin.stop();
     return true;
   } else {
-    computerLog("Checkint connection failed");
+    Serial.println("Checkint connection failed");
     return false;
   }
 }
@@ -632,6 +650,155 @@ bool connectAndSendToCheckout(String message) {
   }
 }
 
+void sendRequestCheckin() {
+  beepSound();
+  checkInWithLocalHTTP(studentId, numplate, numplateId);
+}
+
+void sendRequestCheckout() {
+  beepSound();
+  checkOutWithLocalHTTP(studentId, numplate, numplateId);
+}
+
+bool checkInWithLocalHTTP(String student_id, String number_plate, String img_check_in_url) {
+  bool requestResult = false;
+
+  const char* serverName = "192.168.235.13";
+  String endpoint = "/check-ins";
+  const int serverPort = 80;
+  HTTPClient http;
+  http.begin(String("http://") + serverName + endpoint);
+
+  http.addHeader("Content-Type", "application/json");
+  // Khởi tạo đối tượng JSON để chứa dữ liệu
+  StaticJsonDocument<200> doc;
+  doc["student_id"] = student_id;
+  doc["number_plate"] = number_plate;
+  doc["img_check_in"] = img_check_in_url;
+  // Chuyển đổi đối tượng JSON thành chuỗi JSON
+  String data;
+  serializeJson(doc, data);
+
+  int httpResponseCode = http.POST(data);
+
+  String result;
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(response);
+    result = response;
+
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
+
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
+
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      // handle failed
+      status = "Failed";
+      lcdWriteStatus();
+      alertSound();
+      requestResult = false;
+    }
+
+    // Lấy giá trị các trường dữ liệu
+
+    // In giá trị các trường dữ liệu
+
+    // handle success
+    step = 3;
+    status = "Success";
+    lcdWriteStatus();
+    successSound();
+    requestResult = true;
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+    result = "";
+
+    // handle failed
+    status = "Failed";
+    lcdWriteStatus();
+    alertSound();
+    requestResult = false;
+  }
+  http.end();
+  return requestResult;
+}
+
+bool checkOutWithLocalHTTP(String student_id, String number_plate, String img_check_out_url) {
+  bool requestResult = false;
+
+  const char* serverName = "192.168.235.13";
+  String endpoint = "/logs";
+  const int serverPort = 80;
+  HTTPClient http;
+  http.begin(String("http://") + serverName + endpoint);
+
+  http.addHeader("Content-Type", "application/json");
+  // Khởi tạo đối tượng JSON để chứa dữ liệu
+  StaticJsonDocument<200> doc;
+  doc["student_id"] = student_id;
+  doc["number_plate"] = number_plate;
+  doc["img_check_out"] = img_check_out_url;
+  // Chuyển đổi đối tượng JSON thành chuỗi JSON
+  String data;
+  serializeJson(doc, data);
+
+  int httpResponseCode = http.POST(data);
+
+  String result;
+  if (httpResponseCode > 0) {
+    String response = http.getString();
+    Serial.println(response);
+    result = response;
+
+    // Khai báo bộ đệm đối tượng JSON
+    DynamicJsonDocument doc(1024);
+
+    // Phân tích cú pháp JSON
+    DeserializationError error = deserializeJson(doc, response);
+
+    // Kiểm tra lỗi phân tích cú pháp JSON
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      // handle failed
+      status = "Failed";
+      lcdWriteStatus();
+      alertSound();
+      requestResult = false;
+    }
+
+    // Lấy giá trị các trường dữ liệu
+
+    // In giá trị các trường dữ liệu
+
+    // handle success
+    step = 3;
+    status = "Success";
+    lcdWriteStatus();
+    successSound();
+    requestResult = true;
+  } else {
+    Serial.print("Error on sending POST: ");
+    Serial.println(httpResponseCode);
+    result = "";
+
+    // handle failed
+    status = "Failed";
+    lcdWriteStatus();
+    alertSound();
+    requestResult = false;
+  }
+  http.end();
+  return requestResult;
+}
+
+
 #pragma endregion
 
 #pragma region CLEANER
@@ -642,28 +809,29 @@ void resetSystemMode() {
 }
 
 void resetStudentCardStep() {
-  studentFaculty = "Faculty";
+  studentFaculty = "";
   studentClass = "Class";
   studentName = "Name";
-  studentId = "102200000";
+  studentId = "";
 
   lcdWriteClassAndName();
 }
 
 void resetNumberPlateStep() {
   numplateId = "";
-  numplate = "0R00 - 0000";
+  numplate = "=====";
   lcdWriteNumberPlate();
 }
 
 void cleanAllScreen() {
   isCheckInMode = true;
-  studentFaculty = "Faculty";
+  studentFaculty = "";
   studentClass = "Class";
   studentName = "Name";
-  studentId = "102200000";
+  studentId = "";
   numplateId = "";
-  numplate = "0R00 - 0000";
+  numplate = "=====";
+  status = "";
   updateScreenState();
 }
 
@@ -672,7 +840,7 @@ void cleanAllScreen() {
 // Main func
 void setup() {
   Serial.begin(9600);
-  computerLog("DEBUG SERIAL PORT READY!");
+  Serial.println("DEBUG SERIAL PORT READY!");
 
   configHardwareSerial();
   configStatusLed();
@@ -683,26 +851,27 @@ void setup() {
   configUltrasonicSensor();
 
   connectWifi();
-  computerLog("============SYSTEM READY============");
+  Serial.println("============SYSTEM READY============");
 }
 
 void loop() {
-  int distance = getDistance(false);
-  if (distance <= 20 && distance >= 10) {
-    if (!isCapturedStudentCard) {
-      computerLog("DISABLE CAMERA. PLEASE LEAVE SCAN ZONE AND RE SCAN TO CONTINUE CAPTURE");
-      isCapturedStudentCard = true;
-      //deplay for stable
-      delay(1000);
-      captureStudentCard();
+  if (step == 0) {
+    int distance = getDistance(false);
+    if (distance <= 20 && distance >= 10) {
+      if (!isCapturedStudentCard) {
+        Serial.println("DISABLE CAMERA. PLEASE LEAVE SCAN ZONE AND RE SCAN TO CONTINUE CAPTURE");
+        isCapturedStudentCard = true;
+        //deplay for stable
+        delay(1000);
+        captureStudentCard();
+      }
+
+    } else if (distance > 20) {
+      Serial.println("SCAN CARD CAMERA ENABLED.");
+      isCapturedStudentCard = false;
+    } else {
     }
-
-  } else if (distance > 20) {
-    computerLog("SCAN CARD CAMERA ENABLED.");
-    isCapturedStudentCard = false;
-  } else {
   }
-
   handleBtnModePush();
   handleBtnCancelPush();
   handleBtnOKPush();

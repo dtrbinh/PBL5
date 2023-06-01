@@ -26,10 +26,9 @@
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
 
-// const char* ssid = "freewifi";
-// const char* password = "123512356";
-const char* ssid = "NHANNT";
-const char* password = "0906551010";
+// IP Address: http://192.168.235.205
+const char* ssid = "ChanBeDu";
+const char* password = "ChuBeDan";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -303,7 +302,7 @@ String postStudentCard() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.1.20";
+  const char* serverName = "192.168.235.13";
   const int serverPort = 80;
   const char* serverPath = "/students/scan-card";
 
@@ -323,20 +322,14 @@ String postImageWithLocalHTTP(camera_fb_t* fb) {
 
   http.addHeader("Content-Length", String(totalLen));
 
-  String body;
-  body.reserve(totalLen);
-  body += head;
-
-  uint8_t* fbBuf = fb->buf;
-  size_t fbLen = fb->len;
-
-  body += String((char*)fbBuf, fbLen);
-
-  body += tail;
+  // Tạo chuỗi form data
+  String formData = head;
+  formData += String((char*)fb->buf, fb->len);
+  formData += "\r\n--PBL5DUT\r\nContent-Disposition: form-data; name=\"arduino\"\r\n\r\n1";
+  formData += tail;
 
   esp_camera_fb_return(fb);
-  int httpResponseCode = http.POST((uint8_t*)body.c_str(), body.length());
-  // free(fbBuf);
+  int httpResponseCode = http.POST(formData);
 
   String result;
   if (httpResponseCode > 0) {
@@ -378,17 +371,11 @@ String postImageWithLocalHTTP(camera_fb_t* fb) {
     Serial.println(message);
     Serial.print("status: ");
     Serial.println(status);
-
-    String faculty_name = String(falculty).replace(" ", "");
-    String student_name = String(name).replace(" ", "");
-
-
-
     // "102200010$DoTranBinh$20T1$KhoaCNTT";
     if (status == 0) {
       result = "";
     } else {
-      result = String(student_id) + "$" + String(student_name) + "$" + String(class_name) + "$" + String(faculty_name);
+      result = String(student_id) + "$" + String(name) + "$" + String(class_name) + "$" + String(faculty);
     }
   } else {
     Serial.print("Error on sending POST: ");

@@ -16,10 +16,8 @@
 #include <ArduinoJson.h>
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-// const char* ssid = "freewifi";
-// const char* password = "123512356";
-const char* ssid = "NHANNT";
-const char* password = "0906551010";
+const char* ssid = "ChanBeDu";
+const char* password = "ChuBeDan";
 
 #define FLASH_GPIO_NUM 4
 #define BUILT_IN_LED 33
@@ -276,11 +274,8 @@ String readPlateNumber() {
   if (isTakingPicture) return "";
   camera_fb_t* fb = NULL;  // pointer
   Serial.println("Taking a photo...");
-  // turnOnFlash();
-  // delay(100);
+
   fb = esp_camera_fb_get();
-  // delay(100);
-  // turnOffFlash();
 
   if (!fb) {
     Serial.println("Camera capture failed");
@@ -299,7 +294,7 @@ String readPlateNumber() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.1.20";
+  const char* serverName = "192.168.235.13";
   const int serverPort = 80;
   const char* serverPath = "/plates/read-plate-text";
 
