@@ -67,6 +67,7 @@ def create_log_service():
                 }), 400
             
         except Exception as e:
+            print(e)
             db.session.rollback()
             return jsonify({
                 "data": {
@@ -113,6 +114,7 @@ def update_log_by_id_service(id):
                 db.session.commit()
                 return log_schema.jsonify(log), 200
             except Exception as e:
+                print(e)
                 db.session.rollback()
                 return jsonify({"message": "Can not update log!"}), 400
         else:
@@ -130,7 +132,8 @@ def delete_log_by_id_service(id):
             db.session.delete(log)
             db.session.commit()
             return log_schema.jsonify(log), 200
-        except Exception:
+        except Exception as e:
+            print(e)
             db.session.rollback()
             return jsonify({"message": "Can not delete log!"}), 400
     else:
@@ -140,6 +143,6 @@ def delete_log_by_id_service(id):
 def find_log_by_id_service(id):
     log = Log.query.get(id)
     if log:
-        return log.jsonify(log)
+        return log_schema.jsonify(log), 200
     else:
         return jsonify({"message": "Log not found!"}), 404

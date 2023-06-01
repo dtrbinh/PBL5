@@ -1,7 +1,7 @@
 from flask import Blueprint
 from src.service.student_service import get_all_students_service,\
     create_student_service, scan_student_card_service, find_student_by_id_service, \
-    update_student_by_id_service, delete_student_by_id_service, create_students_service
+    update_student_by_id_service, delete_student_by_id_service, create_many_students_service, import_file_students_service
 
 students = Blueprint('students', __name__, url_prefix='/students')
 
@@ -25,10 +25,15 @@ def scan_student_card():
 def create_student():
     return create_student_service()
 
+# Add new student
+@students.route('/import-file', methods=['POST'])
+def import_file_students():
+    return import_file_students_service()
+
 # Add new many students
 @students.route('/insertMany', methods=['POST'])
-def create_students():
-    return create_students_service()
+def create_many_students():
+    return create_many_students_service()
 
 # update student
 @students.route("/<string:id>", methods=['PUT'])
