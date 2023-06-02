@@ -27,6 +27,7 @@
 // REPLACE WITH YOUR NETWORK CREDENTIALS
 
 // IP Address: http://192.168.235.205
+String thirdOctet = "";
 const char* ssid = "ChanBeDu";
 const char* password = "ChuBeDan";
 
@@ -65,6 +66,24 @@ bool isReady = false;
 bool isTakingPicture = false;
 unsigned long connectWifiTimer = 0;
 
+
+#pragma region EXTENSION
+String splitter(String data, char separator, int index) {
+  int found = 0;
+  int strIndex[] = { 0, -1 };
+  int maxIndex = data.length() - 1;
+
+  for (int i = 0; i <= maxIndex && found <= index; i++) {
+    if (data.charAt(i) == separator || i == maxIndex) {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i + 1 : i;
+    }
+  }
+
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+#pragma endregion
 
 #pragma region SYSTEM_CONFIG
 //Config region
@@ -158,8 +177,10 @@ void connectWifi() {
   }
   Serial.println();
   // Print ESP32 Local IP Address
-  Serial.print("IP Address: http://");
-  Serial.println(WiFi.localIP());
+  String localIP = WiFi.localIP().toString();
+  Serial.println(localIP);
+  thirdOctet = splitter(localIP, '.', 2);
+  Serial.println("Third octet: " + thirdOctet);
   isReady = true;
 }
 #pragma endregion
@@ -302,7 +323,7 @@ String postStudentCard() {
 }
 
 String postImageWithLocalHTTP(camera_fb_t* fb) {
-  const char* serverName = "192.168.235.13";
+  String serverName = "192.168." + thirdOctet + ".13";
   const int serverPort = 80;
   const char* serverPath = "/students/scan-card";
 

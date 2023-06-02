@@ -72,7 +72,7 @@ String splitter(String data, char separator, int index) {
 
 #pragma region WIFI_INFO
 // REPLACE WITH YOUR NETWORK CREDENTIALS
-// IP: 192.168.223.198
+// IP: 192.168.235.198
 const char* ssid = "ChanBeDu";
 const char* password = "ChuBeDan";
 #pragma endregion
@@ -81,11 +81,12 @@ const char* password = "ChuBeDan";
 //rx - tx
 HardwareSerial st_card(1);
 
-const char* checkinIP = "192.168.235.145";  // địa chỉ IP của ESP32-CAM
+String thirdOctet = "";
+String checkinIP = "192.168.235.145";  // địa chỉ IP của ESP32-CAM
 const int checkinPort = 88;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkin;
 
-const char* checkoutIP = "192.168.235.228";  // địa chỉ IP của ESP32-CAM
+String checkoutIP = "192.168.235.228";  // địa chỉ IP của ESP32-CAM
 const int checkoutPort = 90;                 // cổng kết nối của ESP32-CAM
 WiFiClient checkout;
 
@@ -216,7 +217,12 @@ void connectWifi() {
     }
   }
   // Print ESP32 Local IP Address
-  Serial.println(WiFi.localIP());
+  String localIP = WiFi.localIP().toString();
+  Serial.println(localIP);
+  thirdOctet = splitter(localIP, '.', 2);
+  Serial.println("Third octet: " + thirdOctet);
+  checkinIP = "192.168." + thirdOctet + ".145";
+  checkoutIP = "192.168." + thirdOctet + ".228";
 }
 #pragma endregion
 
@@ -621,8 +627,7 @@ void handleCheckOutResponse() {
 #pragma region MESSSENGER
 
 bool connectAndSendToCheckin(String message) {
-  if (checkin.connect(checkinIP, checkinPort)) {
-
+  if (checkin.connect(checkinIP.c_str(), checkinPort)) {
     checkin.write(message.c_str(), message.length());
     Serial.println("Waiting check in camera response...");
     handleCheckInResponse();
@@ -636,7 +641,7 @@ bool connectAndSendToCheckin(String message) {
 }
 
 bool connectAndSendToCheckout(String message) {
-  if (checkout.connect(checkoutIP, checkoutPort)) {
+  if (checkout.connect(checkoutIP.c_str(), checkoutPort)) {
 
     checkout.write(message.c_str(), message.length());
     Serial.println("Waiting checkout camera response...");
@@ -663,7 +668,7 @@ void sendRequestCheckout() {
 bool checkInWithLocalHTTP(String student_id, String number_plate, String img_check_in_url) {
   bool requestResult = false;
 
-  const char* serverName = "192.168.235.13";
+  String serverName = "192.168." + thirdOctet + ".13";
   String endpoint = "/check-ins";
   const int serverPort = 80;
   HTTPClient http;
@@ -732,7 +737,7 @@ bool checkInWithLocalHTTP(String student_id, String number_plate, String img_che
 bool checkOutWithLocalHTTP(String student_id, String number_plate, String img_check_out_url) {
   bool requestResult = false;
 
-  const char* serverName = "192.168.235.13";
+  String serverName = "192.168." + thirdOctet + ".13";
   String endpoint = "/logs";
   const int serverPort = 80;
   HTTPClient http;
