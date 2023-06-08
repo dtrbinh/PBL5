@@ -15,8 +15,9 @@ def read_plate_text_service():
             # lấy text trên biển số xe
             number_plate = getPlateTextFromImage(img_path)
 
-            # nếu có plate_number
+            # nếu khong có plate_number
             if number_plate is None:
+                print("Can not get plate text number")
                 return jsonify({
                     "data": {
                         "number_plate": "undefined",
@@ -26,6 +27,7 @@ def read_plate_text_service():
                     "status": 0
                 }), 400
             else:
+                print("Number liscense plate: ", number_plate)
                 return jsonify({
                     "data": {
                         "number_plate": number_plate,
@@ -35,6 +37,7 @@ def read_plate_text_service():
                     "status": 1
                 }), 201
     else:
+        print("Validation request error")
         return jsonify({
                 "data": {
                     "number_plate": "undefined",

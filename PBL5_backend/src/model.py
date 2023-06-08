@@ -13,6 +13,14 @@ class Student(db.Model):
         self.name = name
         self.class_name = class_name
         self.faculty = faculty
+    
+    def __str__(self):
+        return f"Student {{\n" \
+               f"  id: {self.id}\n" \
+               f"  name: {self.name}\n" \
+               f"  class_name: {self.class_name}\n" \
+               f"  faculty: {self.faculty}\n" \
+               f"}}"
 
 class CheckIn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,6 +33,15 @@ class CheckIn(db.Model):
         self.student_id = student_id
         self.time_check_in = time_check_in
         self.img_check_in = img_check_in
+    
+    def __str__(self):
+        return f"CheckIn {{\n" \
+               f"  id: {self.id}\n" \
+               f"  number_plate: {self.number_plate}\n" \
+               f"  student_id: {self.student_id}\n" \
+               f"  time_check_in: {self.time_check_in}\n" \
+               f"  img_check_in: {self.img_check_in}\n" \
+               f"}}"
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,3 +59,14 @@ class Log(db.Model):
         self.student_id = student_id
         self.img_check_in = img_check_in
         self.img_check_out = img_check_out
+
+    def __str__(self):
+        return f"Log {{\n" \
+               f"  id: {self.id}\n" \
+               f"  number_plate: {self.number_plate}\n" \
+               f"  student_id: {self.student_id}\n" \
+               f"  time_check_in: {self.time_check_in}\n" \
+               f"  time_check_out: {self.time_check_out}\n" \
+               f"  img_check_in: {self.img_check_in}\n" \
+               f"  img_check_out: {self.img_check_out}\n" \
+               f"}}"

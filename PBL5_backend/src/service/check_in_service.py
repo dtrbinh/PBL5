@@ -25,6 +25,7 @@ def create_check_in_service():
             # Check number_plate whether checked in before or not
             existing_check_in = CheckIn.query.filter_by(number_plate=number_plate).first()
             if existing_check_in:
+                print("The vehicle has been checked in before")
                 return jsonify({
                     "data": {
                         "id": existing_check_in.id,
@@ -41,6 +42,7 @@ def create_check_in_service():
             check_in = CheckIn(number_plate, student_id, time_check_in, img_check_in)
             db.session.add(check_in)
             db.session.commit()
+            print(check_in)
             return jsonify({
                     "data": {
                         "id": check_in.id,
@@ -53,7 +55,7 @@ def create_check_in_service():
                     "status": 1
                 }), 201
         except Exception as e:
-            print(e)
+            print("Error in create check in: ", str(e))
             return jsonify({
                     "data": {
                         "id": "undefined",
@@ -66,6 +68,7 @@ def create_check_in_service():
                     "status": 0
                 }), 400
     else:
+        print("Validation request error")
         return jsonify({
                     "data": {
                         "id": "undefined",
@@ -107,7 +110,7 @@ def update_check_in_by_id_service(id):
                 db.session.commit()
                 return check_in_schema.jsonify(check_in), 200
             except Exception as e:
-                print(e)
+                print("Error in update check in: ", str(e))
                 db.session.rollback()
                 return jsonify({"message": "Can not update check in!"}), 400
         else:
@@ -126,7 +129,8 @@ def delete_check_in_by_id_service(id):
             db.session.commit()
             return check_in_schema.jsonify(check_in), 200
         except Exception as e:
-            print(e)
+            print("Error in delete check in: ", str(e))
             return jsonify({"message": "Can not delete check in!"}), 400
     else:
+        print("Check in not found!")
         return jsonify({"message": "Check in not found!"}), 404
