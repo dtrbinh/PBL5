@@ -104,7 +104,7 @@ class _CheckInDetailScreenState extends State<EditCheckinScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết Check-in'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: SingleChildScrollView(
         child: Padding(

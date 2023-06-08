@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'checkin_screen.dart';
@@ -15,8 +14,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _widgetOptions = [
-    CheckInScreen(),
-    CheckOutScreen(),
+    const CheckInScreen(),
+    const CheckOutScreen(),
   ];
 
   void _onItemTapped(int index) {

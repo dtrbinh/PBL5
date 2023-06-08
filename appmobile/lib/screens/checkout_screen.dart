@@ -394,8 +394,7 @@ class _MotorbikeImageInputState extends State<CheckOutScreen> {
                 child: const Text('Chụp biển số xe'),
               ),
               Visibility(
-                visible:
-                    cardImageCheckout != null && motorbikeImageCheckout != null,
+                visible: student.status != 0 && motorbike.status != 0,
                 child: ElevatedButton(
                   onPressed: (() {
                     checkOut(

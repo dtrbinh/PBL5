@@ -91,7 +91,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       appBar: AppBar(
         title: const Text('Lịch sử checkin, checkout'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: RefreshIndicator(
         onRefresh: () async {

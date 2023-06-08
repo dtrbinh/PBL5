@@ -98,7 +98,7 @@ class _CheckInManagementState extends State<CheckInManagement> {
       appBar: AppBar(
         title: const Text('Lịch sử checkin'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: RefreshIndicator(
         onRefresh: () async {

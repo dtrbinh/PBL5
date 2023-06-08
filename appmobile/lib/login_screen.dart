@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,11 +21,32 @@ class _LoginScreenState extends State<LoginScreen> {
   bool passwordToggle = true;
 
   @override
+  void initState() {
+    super.initState();
+    loadSavedData();
+  }
+
+  Future<void> loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      emailController.text = prefs.getString('email') ?? '';
+      passwordController.text = prefs.getString('password') ?? '';
+    });
+  }
+
+  Future<void> saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', emailController.text);
+    await prefs.setString('password', passwordController.text);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Đăng nhập'),
         centerTitle: true,
+        backgroundColor: Colors.blueGrey,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -143,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       }
                       debugPrint("success");
+                      saveData();
                       // emailController.clear();
                       // passwordController.clear();
                     }
@@ -151,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 50,
                     decoration: BoxDecoration(
                       color: Colors.indigo,
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(100),
                     ),
                     child: const Center(
                       child: Text(

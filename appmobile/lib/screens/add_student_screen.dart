@@ -64,7 +64,7 @@ class AddStudentScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Thêm sinh viên'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

@@ -89,7 +89,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       appBar: AppBar(
         title: const Text('Cập nhật thông tin sinh viên'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -120,7 +120,7 @@ class _StudentManagementState extends State<StudentManagement> {
       appBar: AppBar(
         title: const Text('Quản lý sinh viên'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: RefreshIndicator(
         onRefresh: () async {

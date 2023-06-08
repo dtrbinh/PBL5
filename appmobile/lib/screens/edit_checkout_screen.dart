@@ -107,9 +107,9 @@ class _EditCheckoutScreenState extends State<EditCheckoutScreen> {
     final updatedTimeCheckIn = timeCheckInController.text.toString();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chi tiết lịch sử check-in, check-out'),
+        title: const Text('Chi tiết lịch sử '),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: SingleChildScrollView(
         child: Padding(

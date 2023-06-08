@@ -24,7 +24,7 @@ class _ManagerScreenState extends State<ManagerScreen> {
       appBar: AppBar(
         title: const Text('Quản lý nhà xe'),
         centerTitle: true,
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blueGrey,
       ),
       body: Center(
         child: Column(

@@ -392,8 +392,7 @@ class _ImageInputState extends State<CheckInScreen> {
                 child: const Text('Chụp biển số xe'),
               ),
               Visibility(
-                visible:
-                    cardImageCheckin != null && motorbikeImageCheckin != null,
+                visible: student.status != 0 && motorbike.status != 0,
                 child: ElevatedButton(
                   onPressed: () {
                     // Xử lý khi nút "Check-in" được nhấn

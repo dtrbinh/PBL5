@@ -13,11 +13,36 @@ class SplashScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Quản lý nhà xe'),
           centerTitle: true,
-          backgroundColor: Colors.cyan,
+          backgroundColor: Colors.blueGrey,
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Row(
+              children: [
+                const SizedBox(
+                  width: 30,
+                ),
+                Image.asset(
+                  "assets/AnhTruong.jpg",
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(
+                  width: 30,
+                ),
+                Image.asset(
+                  "assets/AnhKhoa.jpg",
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             Center(
               child:
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -31,9 +56,9 @@ class SplashScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
-                    fixedSize: const Size.fromWidth(170),
+                    fixedSize: const Size.fromWidth(95),
                   ),
-                  child: const Text('Check-in , Check-out'),
+                  child: const Text('Nghiệp vụ'),
                 ),
                 const SizedBox(
                   width: 10,
@@ -48,12 +73,15 @@ class SplashScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
-                    fixedSize: const Size.fromWidth(100),
+                    fixedSize: const Size.fromWidth(95),
                   ),
                   child: const Text('Quản lý'),
                 ),
               ]),
             ),
+            const SizedBox(
+              height: 50,
+            )
           ],
         ));
   }
