@@ -38,6 +38,7 @@ def create_log_service():
                 ## xóa check-in tìm được
                 db.session.delete(check_in_find)
                 db.session.commit()
+                print(new_log)
                 return jsonify({
                     "data": {
                             "id": new_log.id,
@@ -52,6 +53,7 @@ def create_log_service():
                     "status": 1
                 }), 201
             else:
+                print("Student have not checked in")
                 return jsonify({
                     "data": {
                         "id": "undefined",
@@ -67,7 +69,7 @@ def create_log_service():
                 }), 400
             
         except Exception as e:
-            print(e)
+            print("Error in create log: ", str(e))
             db.session.rollback()
             return jsonify({
                 "data": {
@@ -83,6 +85,7 @@ def create_log_service():
                 "status": 0
             }), 400
     else:
+        print("Validation request error")
         return jsonify({
                     "data": {
                         "id": "undefined",
@@ -114,7 +117,7 @@ def update_log_by_id_service(id):
                 db.session.commit()
                 return log_schema.jsonify(log), 200
             except Exception as e:
-                print(e)
+                print("Error in update log: ", str(e))
                 db.session.rollback()
                 return jsonify({"message": "Can not update log!"}), 400
         else:
@@ -133,7 +136,7 @@ def delete_log_by_id_service(id):
             db.session.commit()
             return log_schema.jsonify(log), 200
         except Exception as e:
-            print(e)
+            print("Error in delete log: ", str(e))
             db.session.rollback()
             return jsonify({"message": "Can not delete log!"}), 400
     else:

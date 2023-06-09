@@ -29,10 +29,11 @@ def create_student_service():
             class_name = request.json['class_name']
             faculty = request.json['faculty']
             student = Student(id, name, class_name, faculty)
+            print(student)
             db.session.add(student)
             db.session.commit()
         except Exception as e:
-            print(e)
+            print("Error in create student: ", str(e))
             db.session.rollback()
             return jsonify({
                 "message": "Can not add new student",
@@ -40,6 +41,7 @@ def create_student_service():
             }), 400
         return student_schema.jsonify(student), 201
     else:
+        print("Validation request error")
         return jsonify({
             "message": "Validation request error",
             "status": 0
@@ -63,21 +65,25 @@ def create_many_students_service():
                 student = Student(id=id, name=name, class_name=class_name, faculty=faculty)
                 students.append(student)
             else:
+                print("Validation request error")
                 return jsonify({
                     "message": "Validation request error",
                     "status": 0
                 }), 400
         try:
             db.session.bulk_save_objects(students)
+            for student in students:
+                print(student)
             db.session.commit()
         except Exception as e:
-            print(e)
+            print("Error in create many student: ", str(e))
             db.session.rollback()
             return jsonify({"message": "Can not add new students", "status": 0}), 400
         return student_schemas.jsonify(students), 201
     else:
+        print("Validation request error")
         return jsonify({
-            "message": "Invalid request data",
+            "message": "Validation request error",
             "status": 0
         }), 400
 
@@ -85,8 +91,10 @@ def create_many_students_service():
 def find_student_by_id_service(id):
     student = Student.query.get(id)
     if student:
+        print(student)
         return student_schema.jsonify(student)
     else:
+        print("Student not found!")
         return jsonify({"message": "Student not found!"}), 404
 
 # update student by id service
@@ -101,13 +109,15 @@ def update_student_by_id_service(id):
                 student.name = request.json['name']
                 student.class_name = request.json['class_name']
                 student.faculty = request.json['faculty']
+                print(student)
                 db.session.commit()
             except Exception as e:
-                print(e)
+                print("Error when update student: ", str(e))
                 db.session.rollback()
                 return jsonify({"message": "Can not update student!"}), 400
             return student_schema.jsonify(student), 200
         else:
+            print("Validation request error")
             return jsonify({
                 "message": "Validation request error",
                 "status": 0
@@ -123,11 +133,12 @@ def delete_student_by_id_service(id):
             db.session.delete(student)
             db.session.commit()
         except Exception as e:
-            print(e)
+            print("Error when delete student: ", str(e))
             db.session.rollback()
             return jsonify({"message": "Can not delete student!"}), 400
         return student_schema.jsonify(student), 200
     else:
+        print("Student not found!")
         return jsonify({"message": "Student not found!"}), 404
 
 # scan student card service
@@ -137,12 +148,6 @@ def scan_student_card_service():
     if 'student_card_img' in request.files:
         student_card_image = request.files['student_card_img']
 
-        # # Tạo đường dẫn ảnh tạm
-        # prefix = f'SWM-{randint(10, 900)}-{date.today()}'
-        # filename = secure_filename(student_card_image.filename)
-        # filename = f'{prefix}-{filename}'
-        # filename = 'src/static/upload/image/student-cards/' + filename
-        # student_card_image.save(filename)
         # Get image path
         img_path = uploadImage(student_card_image, 'student-cards')
          # Đọc mã số sv từ barcode
@@ -150,6 +155,7 @@ def scan_student_card_service():
             image = cv2.imread(img_path)
             barcodes = pyzbar.decode(image)
             if len(barcodes) <= 0:
+                print("Can not get student id in student card")
                 return jsonify({
                     "data": {
                         "student_id": 'undefined',
@@ -169,6 +175,7 @@ def scan_student_card_service():
                     if 'arduino' in request.form and request.form['arduino'] == "1":
                         student.name = unidecode(student.name).replace(" ", "")
                         student.faculty = unidecode(student.faculty).replace(" ", "")
+                    print(student)
                     return jsonify({
                         "data": {
                             "student_id": student.id,
@@ -180,6 +187,7 @@ def scan_student_card_service():
                         "message": "SUCCESS"
                     }), 201
                 else:
+                    print("Student have not in database")
                     return jsonify({
                         "data": {
                             "student_id": 'undefined',
@@ -191,7 +199,7 @@ def scan_student_card_service():
                         "message": "Student have not in database"
                     }), 404
         except Exception as e:
-            print(e)
+            print("Error in scan student card: " + str(e))
             return jsonify({
                 "data": {
                     "student_id": 'undefined',
@@ -203,6 +211,7 @@ def scan_student_card_service():
                 "message": "FAILED"
             }), 400
     else:
+        print("Validation request error")
         return jsonify({
                 "data": {
                         "student_id": 'undefined',
@@ -238,13 +247,16 @@ def import_file_students_service():
             students.append(student)
         
     except csv.Error as e:
+        print("Error in reading csv: ", str(e))
         return jsonify({"message": "Error reading CSV file", "status": 0}), 400
 
     try:
+        for student in students:
+            print(student)
         db.session.bulk_save_objects(students)
         db.session.commit()
     except Exception as e:
-        print(e)
+        print("Error in import file student: ", str(e))
         db.session.rollback()
         return jsonify({"message": "Error saving students to database", "status": 0}), 400
 
